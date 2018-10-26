@@ -20,8 +20,8 @@
  */
 
 import { expect }                                      from 'chai';
-import * as Q                           from 'q';
-import * as Debug                 from 'debug';
+import * as Q                                          from 'q';
+import * as Debug                                      from 'debug';
 
 import { Interceptor }                                 from '../main/annotation/interceptor'; 
 import { Component }                                   from '../main/annotation/component';
@@ -518,8 +518,88 @@ describe('Integration Tests', function() {
 			this.handleFaultMethodCalledCount = 0;
 		}
 	}
+	
+	@Interceptor({
+		"interactionStyle": InteractionStyleType.ASYNC
+	})
+	class AsyncLogger extends interceptor.Interceptor{
+		private LOG_PREFIX: string = '[Logger] ';
+		private debug:Debug.IDebugger = Debug('proxify:Logger');
+
+		public initMethodCalledCount: number = 0;
+		public handleRequestMethodCalledCount: number = 0;
+		public handleResponseMethodCalledCount: number = 0;
+		public handleFaultMethodCalledCount: number = 0;
+
+		constructor(config: any) {
+			super(config);	
+		}
+
+		private getTargetFullName (context: InvocationContext): string {
+			let targetFullName = context.__interaction__.omd.__className__ + '.' + context.__interaction__.omd.__operationName__;
+
+			return targetFullName;
+		}
+
+		public init (context: InvocationContext, done: Function): void {
+			const self: AsyncLogger = this;
+			Q().then(function() {
+				self.debug(self.LOG_PREFIX + ' init');
+				self.initMethodCalledCount ++;
+				done();
+			});
+		}
+
+		public handleRequest(context: InvocationContext, done: Function): void {
+			const self: AsyncLogger = this;
+			Q().then(function() {
+				self.debug(self.LOG_PREFIX + ' handleRequest: ' + self.getTargetFullName(context));
+				self.handleRequestMethodCalledCount ++;
+				done();	
+			});
+		}
+
+		public handleResponse(context: InvocationContext, done: Function): void {
+			const self: AsyncLogger = this;
+			Q().then(function() {
+				self.debug(self.LOG_PREFIX + ' handleResponse: '+ self.getTargetFullName(context));
+				self.handleResponseMethodCalledCount ++;
+				done();	
+			});
+		}
+
+		public handleFault(context: InvocationContext, done: Function): void {
+			const self: AsyncLogger = this;
+			Q().then(function() {
+				self.debug(self.LOG_PREFIX + ' handleFault: '+ self.getTargetFullName(context));
+				self.handleFaultMethodCalledCount ++;
+			done();	
+			});
+		}
+
+		public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
+			const self: AsyncLogger = this;
+			Q().then(function() {
+				callback(null, true);	
+			});
+		}
+
+		public getName(): string {
+			return 'AsyncLogger';	
+		}
+
+		public reset(): void {
+	    this.initMethodCalledCount = 0;
+			this.handleRequestMethodCalledCount = 0;
+			this.handleResponseMethodCalledCount = 0;
+			this.handleFaultMethodCalledCount = 0;
+		}
+	}
 
 	const logger = new Logger({});
+	const asyncLogger = new AsyncLogger({});
+
+	const DELAY_EXECUTION_TIME = 100;
 
 	@Component({
 		"componentName": 'StockService',
@@ -564,8 +644,8 @@ describe('Integration Tests', function() {
 		@QoS({ singleton: logger})
 		getPriceAsync(name: string): Q.Promise<number> {
 			const self: StockService =  this;
-			return Q().then(function() {
-				// console.log('[getPriceAsync]', name);
+			let deferred: Q.Deferred<any> = Q.defer<any>();
+			setTimeout(function() {
 				var reval = null;
 				self.stocks.some(function(stock) {
 					if (name === stock.name) {
@@ -573,8 +653,27 @@ describe('Integration Tests', function() {
 						return true;
 					}	
 				});
-				return reval.price;	
-			});
+				deferred.resolve(reval.price);
+			}, DELAY_EXECUTION_TIME);
+			return deferred.promise;
+		}
+		
+		@InteractionStyle(InteractionStyleType.ASYNC)
+		@QoS({ singleton: asyncLogger})
+		getPriceAsyncWithAsyncInterceptor(name: string): Q.Promise<number> {
+			const self: StockService =  this;
+			let deferred: Q.Deferred<any> = Q.defer<any>();
+			setTimeout(function() {
+				var reval = null;
+				self.stocks.some(function(stock) {
+					if (name === stock.name) {
+						reval = stock;
+						return true;
+					}	
+				});
+				deferred.resolve(reval.price);
+			}, DELAY_EXECUTION_TIME);
+			return deferred.promise;
 		}
 		
 		@InteractionStyle(InteractionStyleType.ASYNC)
@@ -591,7 +690,24 @@ describe('Integration Tests', function() {
 					}	
 				});
 				cb(null, reval);
-			}, 100);
+			}, DELAY_EXECUTION_TIME);
+		}
+		
+		@InteractionStyle(InteractionStyleType.ASYNC)
+		@QoS({ singleton: asyncLogger})
+		getPriceAsyncCallbackWithAsyncInterceptor(name: string, @Completion cb: (error: any, result: number) => void): void{
+			const self: StockService =  this;
+			setTimeout(function() {
+				// console.log('[getPriceAsyncCallback]', name);
+				var reval = null;
+				self.stocks.some(function(stock) {
+					if (name === stock.name) {
+						reval = stock;
+						return true;
+					}	
+				});
+				cb(null, reval);
+			}, DELAY_EXECUTION_TIME);
 		}
 
 		@InteractionStyle(InteractionStyleType.SYNC)
@@ -679,6 +795,20 @@ describe('Integration Tests', function() {
 		});
 	});
 	
+	it('@QoS on async promise-style method with async ineraction style interceptor', function() {
+		let ss: StockService = new StockService('IBM', 100);
+		asyncLogger.reset();
+		ss.reset();
+		let promsie: Q.Promise<number> = ss.getPriceAsyncWithAsyncInterceptor('IBM');
+		// console.log('--> Waiting for promise resolved');
+		return promsie.then(function(price) {
+			expect(price).to.equal(100);
+			expect(asyncLogger.initMethodCalledCount).to.equal(1);
+			expect(asyncLogger.handleRequestMethodCalledCount).to.equal(1);
+			expect(asyncLogger.handleResponseMethodCalledCount).to.equal(1);
+		});
+	});
+	
 	it('@QoS on async callback-style method with sync ineraction style interceptor', function() {
 		let ss: StockService = new StockService('IBM', 100);
 		logger.reset();
@@ -696,6 +826,31 @@ describe('Integration Tests', function() {
 			expect(logger.initMethodCalledCount).to.equal(1);
 			expect(logger.handleRequestMethodCalledCount).to.equal(1);
 			expect(logger.handleResponseMethodCalledCount).to.equal(1);
+			// console.log('---> asset done');
+		});
+	});
+	
+	it('@QoS on async callback-style method with async ineraction style interceptor', function() {
+		let ss: StockService = new StockService('IBM', 100);
+		asyncLogger.reset();
+		ss.reset();
+		let isCallbackCalled: boolean = false;
+		let deferred: Q.Deferred<any> = Q.defer<any>();
+
+		ss.getPriceAsyncCallbackWithAsyncInterceptor('IBM', function(error: any, result: number) {
+			isCallbackCalled = true;
+
+			// wait for invocation completion
+			setTimeout(function() {
+				deferred.resolve();
+			}, DELAY_EXECUTION_TIME + 50);
+		});
+
+		return deferred.promise.then(function() {
+			expect(isCallbackCalled).to.equal(true);
+			expect(asyncLogger.initMethodCalledCount).to.equal(1);
+			expect(asyncLogger.handleRequestMethodCalledCount).to.equal(1);
+			expect(asyncLogger.handleResponseMethodCalledCount).to.equal(1);
 			// console.log('---> asset done');
 		});
 	});

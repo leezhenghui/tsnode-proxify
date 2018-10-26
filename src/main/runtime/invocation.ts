@@ -28,11 +28,20 @@ import { OperationMetadata, InterceptorFactory }                                
 const debug:Debug.IDebugger = Debug('proxify:runtime:invocation');
 
 export enum InteractionType {
-	INTERACTION_LOCATE = 0,
-	INTERACTION_LOCATE_RESULT = 1,
-  INTERACTION_INVOKE = 2,
-	INTERACTION_INVOKE_RESULT = 4,
-	INTERACTION_INVOKE_FAULT = 8,
+	UNSUPPORTED = 0,
+	INTERACTION_LOCATE = 1,
+	INTERACTION_LOCATE_RESULT = 2,
+  INTERACTION_INVOKE = 4,
+	INTERACTION_INVOKE_RESULT = 8,
+	INTERACTION_INVOKE_FAULT = 16,
+}
+
+export enum CompletionStyle {
+	UNKNOWN = 0,
+	SYNC_DIRECTLY = 1,
+	SYNC_CALLBACK = 2,
+	ASYNC_PROMISE = 4,
+	ASYNC_CALLBACK = 8,
 }
 
 export class Interaction {
@@ -40,6 +49,8 @@ export class Interaction {
 	public omd: OperationMetadata;
 	public _isTargetInvoked: boolean = false;
 	public __hold_on_nexter__: (error: any, status: ProcessStatus) => void;
+	public __completion_style__: CompletionStyle;
+	public __isCallbackStyle__: boolean;
 }
 
 /**
@@ -351,15 +362,16 @@ class TailProcessor extends Processor {
 						// sync callback mode
 						if (context.__interaction__.interactionType === InteractionType.INTERACTION_INVOKE_RESULT ||
 						    context.__interaction__.interactionType === InteractionType.INTERACTION_INVOKE_FAULT) {
-							// console.log('==>[tail]: sync callback mode');
 							debug(method, '[tail] sync callback mode');
+							context.__interaction__.__completion_style__ = CompletionStyle.SYNC_CALLBACK;
 							return;
 						}
 						
 						// async promise mode
 						if (Q.isPromise(reval)) {
-							// console.log('==>[tail]: async promise mode');
 							debug(method, '[tail] async promise mode');
+							context.__interaction__.__completion_style__ = CompletionStyle.ASYNC_PROMISE;
+
 							let realResult: any = null;
 							let realError: any = null; 
 							context.output = Q(reval).then(function(result: any) {
@@ -392,13 +404,13 @@ class TailProcessor extends Processor {
 						// async callback mode
 						if (context._isCallbackSupported()) {
 							debug(method, '[tail] async callback mode');
-							// console.log('==>[tail]: async callback mode');
+							context.__interaction__.__completion_style__ = CompletionStyle.ASYNC_CALLBACK;
 							return;
 						}
 
-						// sync without callback
-						// console.log('==>[tail]: sync w/o callback mode');
+						// sync-directly 
 						debug(method, '[tail] sync directly return value mode');
+						context.__interaction__.__completion_style__ = CompletionStyle.SYNC_DIRECTLY;	
 						context.__interaction__.interactionType = InteractionType.INTERACTION_INVOKE_RESULT;
 						self._process(context, function(error: any, status: ProcessStatus) {
 							return next(error, status);
@@ -487,30 +499,56 @@ export class EndpointInvoker {
 			deferred.resolve();
 		}.bind(self));
 
-		// sync call with either return value or callback function specified
-		if (processStatus &&  processStatus.interactionType === InteractionType.INTERACTION_INVOKE_RESULT) {
-			// console.log('==>[invoker] sync call');
-			debug(method, 'sync call mode(either return value directly or callback)');
+		//================================================= 
+		// only contains sync interceptors in request path
+		//================================================= 
+
+		// sync-callback or sync-directly
+		if ((context.__interaction__.__completion_style__ === CompletionStyle.SYNC_DIRECTLY || context.__interaction__.__completion_style__ === CompletionStyle.SYNC_CALLBACK)  &&  
+			processStatus.interactionType === InteractionType.INTERACTION_INVOKE_RESULT) {
+			if (context.__interaction__.__completion_style__ === CompletionStyle.SYNC_DIRECTLY) {
+				debug(method, 'sync-directly mode');
+			} else {
+				debug(method, 'sync-callback mode');
+			}
 	    return context.output;	
+		}
+		
+		// async-promise
+	 	if (context.__interaction__.__completion_style__ === CompletionStyle.ASYNC_PROMISE) {
+			debug(method, 'async call mode with promise');
+			return deferred.promise;
+		}
+		
+		// async-callback
+	 	if (context.__interaction__.__completion_style__ === CompletionStyle.ASYNC_CALLBACK) {
+			debug(method, 'async call mode with callback');
+			return context.output;
 		}
 		
 		// sync call with exception thrown
 		if (processStatus &&  processStatus.interactionType === InteractionType.INTERACTION_INVOKE_FAULT) {
-			// console.log('==>[invoker] sync call with fault');
-			debug(method, 'sync call mode with fault');
+			if (context.__interaction__.__completion_style__ === CompletionStyle.SYNC_DIRECTLY) {
+				debug(method, 'sync-directly mode with fault');
+			} else if (context.__interaction__.__completion_style__ === CompletionStyle.SYNC_CALLBACK) {
+				debug(method, 'sync-callback mode with fault');
+			} else {
+				debug(method, 'interceptor runtime fault  mode');
+			}
 			throw context.fault.details;
 		}
 
-		// async call without callback specified, so it should be promise sytle return value
-	 	if (! context._isCallbackSupported()) {
-			// console.log('==>[invoker] async call with promise');
+		//============================================ 
+		// contains async interceptors in request path
+		//============================================ 
+		
+		// async-promise
+		if (! context._isCallbackSupported()) {
 			debug(method, 'async call mode with promise');
 			return deferred.promise;
 		}
 
-		// async call with callback function specified.
-		// console.log('==>[invoker] async call with callback');
-		debug(method, 'async call mode with callback');
+		// async-callback
 		return context.output;
 	}
 
