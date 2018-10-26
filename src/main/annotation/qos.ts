@@ -32,9 +32,9 @@ const debug:Debug.IDebugger = Debug('proxify:annotation:qos');
  *
  */
 export function QoS(config ?: {
-  interceptorType: Function,
-	initParams: any,
-	singleton: Interceptor
+  interceptorType ?: Function,
+	initParams ?: any,
+	singleton ?: Interceptor
 }) {
 
 	return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {

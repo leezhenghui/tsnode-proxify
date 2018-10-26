@@ -351,14 +351,14 @@ class TailProcessor extends Processor {
 						// sync callback mode
 						if (context.__interaction__.interactionType === InteractionType.INTERACTION_INVOKE_RESULT ||
 						    context.__interaction__.interactionType === InteractionType.INTERACTION_INVOKE_FAULT) {
-							console.log('==>[tail]: sync callback mode');
+							// console.log('==>[tail]: sync callback mode');
 							debug(method, '[tail] sync callback mode');
 							return;
 						}
 						
 						// async promise mode
 						if (Q.isPromise(reval)) {
-							console.log('==>[tail]: async promise mode');
+							// console.log('==>[tail]: async promise mode');
 							debug(method, '[tail] async promise mode');
 							let realResult: any = null;
 							let realError: any = null; 
@@ -392,12 +392,12 @@ class TailProcessor extends Processor {
 						// async callback mode
 						if (context._isCallbackSupported()) {
 							debug(method, '[tail] async callback mode');
-							console.log('==>[tail]: async callback mode');
+							// console.log('==>[tail]: async callback mode');
 							return;
 						}
 
 						// sync without callback
-						console.log('==>[tail]: sync w/o callback mode');
+						// console.log('==>[tail]: sync w/o callback mode');
 						debug(method, '[tail] sync directly return value mode');
 						context.__interaction__.interactionType = InteractionType.INTERACTION_INVOKE_RESULT;
 						self._process(context, function(error: any, status: ProcessStatus) {
@@ -489,27 +489,27 @@ export class EndpointInvoker {
 
 		// sync call with either return value or callback function specified
 		if (processStatus &&  processStatus.interactionType === InteractionType.INTERACTION_INVOKE_RESULT) {
-			console.log('==>[invoker] sync call');
+			// console.log('==>[invoker] sync call');
 			debug(method, 'sync call mode(either return value directly or callback)');
 	    return context.output;	
 		}
 		
 		// sync call with exception thrown
 		if (processStatus &&  processStatus.interactionType === InteractionType.INTERACTION_INVOKE_FAULT) {
-			console.log('==>[invoker] sync call with fault');
+			// console.log('==>[invoker] sync call with fault');
 			debug(method, 'sync call mode with fault');
 			throw context.fault.details;
 		}
 
 		// async call without callback specified, so it should be promise sytle return value
 	 	if (! context._isCallbackSupported()) {
-			console.log('==>[invoker] async call with promise');
+			// console.log('==>[invoker] async call with promise');
 			debug(method, 'async call mode with promise');
 			return deferred.promise;
 		}
 
 		// async call with callback function specified.
-		console.log('==>[invoker] async call with callback');
+		// console.log('==>[invoker] async call with callback');
 		debug(method, 'async call mode with callback');
 		return context.output;
 	}
