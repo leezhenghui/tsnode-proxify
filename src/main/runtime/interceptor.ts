@@ -1,8 +1,22 @@
 /**
- * 
- * @module Provides interceptor framework
+ * Copyright 2018, leezhenghui@gmail.com.
  *
- * @author leezhenghui@gmail.com 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * 
+ * @module Provides runtime interceptor framework
  *
  */
 
@@ -182,33 +196,6 @@ export class Registry<I extends Processor, M extends InterceptorMetadata> {
 		debug(method + ' [Exit]', name, ides);
 		return ides;
 	}
-  
-	/**
-	 * @method, create a new interceptor instance 
-	 *
-	 */
-	public createInterceptor(name: string): I {
-		let method: string = 'Registry.createInterceptor';
-		debug(method + ' [Enter]', name);
-
-    let interceptorClass: Function = this.getInterceptorClass(name);	
-		if (! interceptorClass) {
-			debug(method + ' [Exit]', name);
-			return null;
-		}
-
-		// quick workaround for the limitation of generic feature in typescript
-		let factoryFieldName: string = 'Factory';
-		let factory: Function = interceptorClass[factoryFieldName];
-		if (! factory) {
-			debug('[WARNING]: Missing interceptor factory class for "' + interceptorClass.name+ '"'); 
-			debug(method + ' [Exit]', name);
-	    return null;	
-		}
-		let inst: I = Reflect.apply(factory, {}, []);
-		debug(method + ' [Exit]', name, inst);
-		return inst;
-	}
 
 	/**
 	 * @method, register a new interceptor with metadata
@@ -223,7 +210,10 @@ export class Registry<I extends Processor, M extends InterceptorMetadata> {
 		}	
 
 		if (this.__interceptors__[ides.__class__.name]) {
-			debug(method + ' [WARNING]: Override existing interceptor "' + ides.__class__.name+ '" in registry'); 
+			console.error(method + ' [WARNING]: Dumplicated interceptor definitions: "' + ides.__class__.name+ '" in registry'); 
+
+			debug(method + ' [Exit](failed)', ides);
+			return;
 		}
 		this.__interceptors__[ides.__class__.name] = ides;
 		debug(method + ' [Exit]', ides);
