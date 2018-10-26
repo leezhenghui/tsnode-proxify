@@ -1,6 +1,6 @@
 {
-  "name": "Proxify",
-  "version": "1.0.0",
+  "name": "node-proxify",
+  "version": "0.0.2",
   "description": "Library for proxy-based AOP with JavaScript, which takes advantages of ECMAScript 2016 decorator features for class annotation and meta-programming syntax",
   "main": "./dist/main/index.js",
   "typings": "./dist/main/index",
@@ -9,9 +9,9 @@
     "unittest": "mocha --compilers ts:ts-node/register,tsx:ts-node/register ./src/test/**/*test.ts",
     "unittest:debug": "DEBUG=proxify* mocha --compilers ts:ts-node/register,tsx:ts-node/register ./src/test/**/*test.ts",
     "test": "npm run build && npm run unittest",
-    "demo": "npm run build && node ./dist/demo/helloworld.js",
-    "demo:debug": "npm run build && DEBUG=proxify* node ./dist/demo/helloworld.js",
-    "test:debug": "npm run build && npm run unittest:debug"
+    "test:debug": "npm run build && npm run unittest:debug",
+    "demo": "ts-node ./src/demo/helloworld.ts",
+    "demo:debug": "DEBUG=proxify* ts-node ./src/demo/helloworld.ts"
   },
   "author": "leezhenghui@gmail.com",
   "license": "MIT",
