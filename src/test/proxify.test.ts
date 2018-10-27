@@ -369,10 +369,10 @@ describe('@Component, @QoS, @Completion, @Callback Basic Runtime Tests', functio
 		expect(stock.getPrice[OPERATION_METADATA_SLOT].sizeOfQoS()).to.equal(2);
 	});
 
-	it('Method which returned by bind() method does NOT contain metadata attachment', function() {
+	it('Method which returned by bind() method contains metadata attachment', function() {
 		let stock: USStock = new USStock('IBM', 100);
 		expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
-		expect(stock.getPrice.bind(stock)[OPERATION_METADATA_SLOT]).to.equal(undefined);
+		expect(stock.getPrice.bind(stock)[OPERATION_METADATA_SLOT] !== undefined).to.equal(true);
 	});
 
 	it('@QoS on static method', function() {
@@ -391,13 +391,13 @@ describe('@Component, @QoS, @Completion, @Callback Basic Runtime Tests', functio
 		expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
 	});
 
-	it('@QoS on object method with binded context', function() {
+	it('@QoS on object method with bind()ed context', function() {
 		let stock: USStock = new USStock('IBM', 100);
 		let v: any = stock.getPrice('IBM', null);
 		expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
 		let getPriceFn: Function = stock.getPrice.bind(stock);
 		expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
-		expect(getPriceFn[isComponentManagedProp]).to.equal(undefined);
+		expect(getPriceFn[isComponentManagedProp]).to.equal(true);
 		expect(v).to.equal(100);
 	});
 
@@ -759,7 +759,7 @@ describe('Integration Tests', function() {
 		expect(logger.handleResponseMethodCalledCount).to.equal(1);
 	});
 
-	it('@QoS on sync non-callback-style method with sync ineraction style interceptor', function() {
+	it('@QoS on sync-return-value-directly method with sync ineraction style interceptor', function() {
 		let ss: StockService = new StockService('IBM', 100);
 		logger.reset();
 		let price: number = ss.getPrice('IBM');
@@ -944,4 +944,14 @@ describe('Integration Tests', function() {
 		expect(logger.handleResponseMethodCalledCount).to.equal(MAX_NESTED_STACK_DEPTH);
 	});
 
+	it('@QoS on sync-return-value-directly bind()ed method', function() {
+		let ss: StockService = new StockService('IBM', 100);
+		logger.reset();
+		let bindedFn = ss.getPrice.bind(ss);
+		let price: number = bindedFn('IBM');
+		expect(price).to.equal(100);
+		expect(logger.initMethodCalledCount).to.equal(1);
+		expect(logger.handleRequestMethodCalledCount).to.equal(1);
+		expect(logger.handleResponseMethodCalledCount).to.equal(1);
+	});
 });

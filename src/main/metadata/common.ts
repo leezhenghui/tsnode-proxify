@@ -32,3 +32,5 @@ export enum InteractionStyleType {
 export const isComponentManagedProp: string = '__is_component_managed__'; 
 
 export const isCallbackWrappedProp: string = '__is_callback_wrapped__'; 
+
+export const isBindWrappedProp: string = '__is_bind_wrapped__'; 

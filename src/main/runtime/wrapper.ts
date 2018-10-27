@@ -21,7 +21,7 @@
  */
 
 import * as Debug                                              from 'debug';
-import { InteractionStyleType, isComponentManagedProp, isCallbackWrappedProp }        from '../metadata/common';
+import { InteractionStyleType, isComponentManagedProp, isCallbackWrappedProp, isBindWrappedProp }        from '../metadata/common';
 import { ComponentMetadata, COMPONENT_METADATA_SLOT }          from '../metadata/component';
 import { OperationMetadata, OPERATION_METADATA_SLOT }          from '../metadata/operation';
 import { CallbackMetadata, CALLBACK_METADATA_SLOT }            from '../metadata/callback';
@@ -121,6 +121,51 @@ class CallbackMethodWrapperTrapHandler {
 	}	
 }
 
+class BindWrapperTrapHandler {
+	constructor(metadata: OperationMetadata, origFn: Function) {
+		this.metadata = metadata;
+		this.origFn = origFn;
+	}
+	
+	private metadata: OperationMetadata;
+	private origFn: Function;
+
+	public get(target: any, name: string): any {
+		const method: string = 'BindWrapperTrapHandler.get';
+		const self: BindWrapperTrapHandler = this;
+		
+		debug(method + ' [Enter]', target, name);
+		if (isBindWrappedProp === name) {
+			debug(method + ' [Exit]', true);
+			return true; 
+		}
+		debug(method + ' [Exit]', target[name]);
+		return target[name];
+	}
+	
+	apply(operation: Function, context: any, args: any[]): any {
+		const method: string = 'BindWrapperTrapHandler.apply';
+		const self: BindWrapperTrapHandler = this;
+
+		debug(method + ' [Enter]', operation.name, args, this.metadata);
+
+		// use self.origFn as context, do not use the passed in param "context"
+		// as that will create a new proxy instance, which will make a duplicated wrapper
+		// for the bindedFn
+		let bindedFn = Reflect.apply(operation, self.origFn, args);
+		if (bindedFn[isComponentManagedProp]) {
+	     return bindedFn;	
+		}
+
+		let wrappedMethod: Function = new Proxy(bindedFn, new MethodWrapperTrapHandler(self.metadata, null, bindedFn));
+
+		debug(method + ' [Enter]', operation.name, args, this.metadata);
+		return wrappedMethod;
+	}
+}
+
+const BIND_METHOD: string = 'bind';
+
 /**
  * Method Proxy wrapper trap handler
  */
@@ -136,11 +181,25 @@ class MethodWrapperTrapHandler {
 	private origFn: Function;
 
 	public get(target: any, name: string): any {
-		let method: string = 'MethodWrapperTrapHandler.get';
+		const method: string = 'MethodWrapperTrapHandler.get';
+		const self: MethodWrapperTrapHandler = this;
 		debug(method + ' [Enter]', target, name);
 		if (isComponentManagedProp === name) {
 			debug(method + ' [Exit]', true);
 			return true; 
+		}
+
+		if (OPERATION_METADATA_SLOT === name) {
+			debug(method + ' [Exit]', this.metadata);
+	    return this.metadata;	
+		}
+
+		if (BIND_METHOD === name) {
+			if (target[name][isBindWrappedProp]) {
+		    return target[name];	
+			}
+			let bindWrappedFn: Function  = new Proxy(target[name], new BindWrapperTrapHandler(self.metadata, self.origFn)); 
+			target[name] = bindWrappedFn;
 		}
 		debug(method + ' [Exit]', target[name]);
 		return target[name];
