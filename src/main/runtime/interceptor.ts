@@ -20,12 +20,12 @@
  *
  */
 
-import * as Debug                       from 'debug';
-import * as Q                           from 'q';
-import { InteractionStyleType }         from '../metadata/common';
-import { InterceptorMetadata }          from '../metadata/interceptor';
-import { OperationMetadata }            from '../metadata/operation';
-import { InteractionType, Interaction, Fault, InvocationContext, Processor, ProcessStatus}                       from '../runtime/invocation';
+import * as Debug                                                                               from 'debug';
+import * as Q                                                                                   from 'q';
+import { InteractionStyleType }                                                                 from '../metadata/common';
+import { InterceptorMetadata }                                                                  from '../metadata/interceptor';
+import { OperationMetadata }                                                                    from '../metadata/operation';
+import { InteractionType, Interaction, Fault, InvocationContext, Processor, ProcessStatus }     from '../runtime/invocation';
 
 const debug:Debug.IDebugger = Debug('proxify:runtime:interceptor');
 

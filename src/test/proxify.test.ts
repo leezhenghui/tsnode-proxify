@@ -22,17 +22,16 @@
 import { expect }                                      from 'chai';
 import * as Q                                          from 'q';
 import * as Debug                                      from 'debug';
-
 import { Interceptor }                                 from '../main/annotation/interceptor'; 
 import { Component }                                   from '../main/annotation/component';
 import { QoS }                                         from '../main/annotation/qos';
 import { InteractionStyle, Completion, Callback, Fault, Output }                            from '../main/annotation/interaction';
-import { InteractionStyleType, isComponentManagedProp} from '../main/metadata/common';
+import { InteractionStyleType, isComponentManagedProp, isCallbackWrappedProp } from '../main/metadata/common';
 import { INTERCEPTOR_METADATA_SLOT }                   from '../main/metadata/interceptor';
 import { OPERATION_METADATA_SLOT }                     from '../main/metadata/operation';
 import { CALLBACK_METADATA_SLOT }                      from '../main/metadata/callback'; 
 import * as interceptor                                from '../main/runtime/interceptor';
-import { InvocationContext, Processor, ProcessStatus }                from '../main/runtime/invocation';
+import { InvocationContext, Processor, ProcessStatus } from '../main/runtime/invocation';
 
 describe('@Interceptor Tests', function() {
 
@@ -853,6 +852,74 @@ describe('Integration Tests', function() {
 			expect(asyncLogger.handleResponseMethodCalledCount).to.equal(1);
 			// console.log('---> asset done');
 		});
+	});
+	
+	const MAX_NESTED_STACK_DEPTH = 5;
+
+	@Component({
+		"componentName": 'NestedInvocation',
+	})
+	class NestedInvocation {
+		public callbackMethodCalledCount: number = 0;
+		public stackDepth: number = 0;
+
+		@InteractionStyle(InteractionStyleType.SYNC)
+		@QoS({ singleton: logger})
+		nestInvoke(name: string, @Completion cb: (error: any, result: string) => void): void {
+			const self: NestedInvocation = this;
+
+			console.log('isCallbackWrappedCallback? :', cb[isCallbackWrappedProp]);
+			console.log('self.nestInvoke isComponentManagedProp? :', self.nestInvoke[isComponentManagedProp]);
+			self.stackDepth ++;
+			if (self.stackDepth === MAX_NESTED_STACK_DEPTH) {
+				cb(null, 'OK');
+			} else {
+		    self.nestInvoke(name, cb);
+			}
+		}
+
+		public reset(): void {
+		  this.callbackMethodCalledCount = 0;
+			this.stackDepth = 0;
+		}
+		
+		@Callback
+		callback(@Fault error: any, @Output result: string): void {
+			if (error) {
+				console.error('Error occurs in callback method, due to: ', error);
+				return;
+			}	
+			this.callbackMethodCalledCount ++;
+		}	
+
+		fnEquals(nestInvokeFn: Function): boolean {
+	
+			if (this.nestInvoke === nestInvokeFn) {
+		    return true;	
+			}
+
+			return false;
+		}
+
+		equals(o: NestedInvocation): boolean {
+	    if (this === o) {
+		    return true;	
+			}	
+			return false;
+		}
+	}
+	
+	it('@QoS on a nested invocation for sync callback-style combin sync-style interceptor', function() {
+		let ni: NestedInvocation = new NestedInvocation();
+		logger.reset();
+		ni.reset();
+		expect(true).to.equal(ni.equals(ni));
+		expect(true).to.equal(ni.fnEquals(ni.nestInvoke));
+		ni.nestInvoke('nested-tester', ni.callback.bind(ni));
+		expect(ni.callbackMethodCalledCount).to.equal(1);
+		expect(logger.initMethodCalledCount).to.equal(MAX_NESTED_STACK_DEPTH);
+		expect(logger.handleRequestMethodCalledCount).to.equal(MAX_NESTED_STACK_DEPTH);
+		expect(logger.handleResponseMethodCalledCount).to.equal(MAX_NESTED_STACK_DEPTH);
 	});
 
 });

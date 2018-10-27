@@ -20,10 +20,10 @@
  *
  */
 
-import * as Debug                                                                                  from 'debug';
-import * as Q                                                                                      from 'q';
-import { InteractionStyleType }                                                                    from '../metadata/common';
-import { OperationMetadata, InterceptorFactory }                                                   from '../metadata/operation';
+import * as Debug                                    from 'debug';
+import * as Q                                        from 'q';
+import { InteractionStyleType }                      from '../metadata/common';
+import { OperationMetadata, InterceptorFactory }     from '../metadata/operation';
 
 const debug:Debug.IDebugger = Debug('proxify:runtime:invocation');
 

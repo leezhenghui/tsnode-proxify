@@ -165,12 +165,9 @@ class MethodWrapperTrapHandler {
 
 					let proxiedCB = origCB; 
 					if (origCB[isCallbackWrappedProp]) {
-						origCB[CALLBACK_ENDPOINT_INVOKER_PROP] = invoker;
-						origCB[CALLBACK_INVOCATION_CONTEXT_PROP] = iCtx;
-					} else {
-						proxiedCB =  new Proxy(origCB, new CallbackMethodWrapperTrapHandler(origCB[CALLBACK_METADATA_SLOT], invoker, iCtx));
+						debug(method + ' nested wrapper', args[cbParamPos]);
 					}
-					// console.log(method, 'callback_metadata: ', origCB[CALLBACK_METADATA_SLOT]);
+					proxiedCB =  new Proxy(origCB, new CallbackMethodWrapperTrapHandler(origCB[CALLBACK_METADATA_SLOT], invoker, iCtx));
 					args[cbParamPos] = proxiedCB;
 				}
 			} 
@@ -178,7 +175,6 @@ class MethodWrapperTrapHandler {
 			// let reval = Reflect.apply(operation, this.targetObject, args);
 			let reval = invoker.invoke(iCtx);
 			debug(method + ' [Exit]', reval);
-			// console.log('>>>> [post-invoke]: ', reval);
 			return reval;
 		} catch(err) {
 			console.error('Error: ' + method, err);
