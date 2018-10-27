@@ -868,8 +868,8 @@ describe('Integration Tests', function() {
 		nestInvoke(name: string, @Completion cb: (error: any, result: string) => void): void {
 			const self: NestedInvocation = this;
 
-			console.log('isCallbackWrappedCallback? :', cb[isCallbackWrappedProp]);
-			console.log('self.nestInvoke isComponentManagedProp? :', self.nestInvoke[isComponentManagedProp]);
+			// console.log('isCallbackWrappedCallback? :', cb[isCallbackWrappedProp]);
+			// console.log('self.nestInvoke isComponentManagedProp? :', self.nestInvoke[isComponentManagedProp]);
 			self.stackDepth ++;
 			if (self.stackDepth === MAX_NESTED_STACK_DEPTH) {
 				cb(null, 'OK');
@@ -909,7 +909,7 @@ describe('Integration Tests', function() {
 		}
 	}
 	
-	it('@QoS on a nested invocation for sync callback-style combin sync-style interceptor', function() {
+	it('@QoS on a method with nested invocations(sync callback-style combin sync-style interceptor)', function() {
 		let ni: NestedInvocation = new NestedInvocation();
 		logger.reset();
 		ni.reset();

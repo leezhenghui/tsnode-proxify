@@ -126,12 +126,14 @@ class CallbackMethodWrapperTrapHandler {
  */
 class MethodWrapperTrapHandler {
 
-	constructor(metadata: OperationMetadata, targetObject: any) {
+	constructor(metadata: OperationMetadata, targetObject: any, origFn: Function) {
 		this.metadata = metadata;
 		this.targetObject = targetObject;
+		this.origFn = origFn;
 	}
 	private metadata: OperationMetadata;
 	private targetObject: any;
+	private origFn: Function;
 
 	public get(target: any, name: string): any {
 		let method: string = 'MethodWrapperTrapHandler.get';
@@ -279,7 +281,12 @@ class ObjectWrapperTrapHandler {
 
 		debug(method + ' method level metadata:', omd);
 
-		let wrappedMethod: Function = new Proxy(target[name], new MethodWrapperTrapHandler(omd, target));
+		let wrappedMethod: Function = new Proxy(target[name], new MethodWrapperTrapHandler(omd, target, target[name]));
+
+		//note: we need replace the original function in the prototype object
+		//otherwise, <obj>.<fn> !== this.<fn>
+		target[name] = wrappedMethod;
+
 		debug(method + ' [Exit](wrapped)', name.toString());
 		return wrappedMethod;
 	}
