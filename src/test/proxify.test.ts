@@ -863,6 +863,11 @@ describe('Integration Tests', function() {
 		public callbackMethodCalledCount: number = 0;
 		public stackDepth: number = 0;
 
+		invoke(): void {
+			// console.log('this.nestInvoke isComponentManagedProp? :', this.nestInvoke[isComponentManagedProp]);
+			this.nestInvoke('nested-tester', this.callback.bind(this));
+		}
+
 		@InteractionStyle(InteractionStyleType.SYNC)
 		@QoS({ singleton: logger})
 		nestInvoke(name: string, @Completion cb: (error: any, result: string) => void): void {
@@ -909,13 +914,30 @@ describe('Integration Tests', function() {
 		}
 	}
 	
+	it('Proxified method should be equals for <obj>.<fn> and this.<fn>', function() {
+		let ni: NestedInvocation = new NestedInvocation();
+		expect(true).to.equal(ni.equals(ni));
+		expect(true).to.equal(ni.fnEquals(ni.nestInvoke));
+	});
+	
 	it('@QoS on a method with nested invocations(sync callback-style combin sync-style interceptor)', function() {
 		let ni: NestedInvocation = new NestedInvocation();
 		logger.reset();
 		ni.reset();
-		expect(true).to.equal(ni.equals(ni));
-		expect(true).to.equal(ni.fnEquals(ni.nestInvoke));
+		// expect(true).to.equal(ni.equals(ni));
+		// expect(true).to.equal(ni.fnEquals(ni.nestInvoke));
 		ni.nestInvoke('nested-tester', ni.callback.bind(ni));
+		expect(ni.callbackMethodCalledCount).to.equal(1);
+		expect(logger.initMethodCalledCount).to.equal(MAX_NESTED_STACK_DEPTH);
+		expect(logger.handleRequestMethodCalledCount).to.equal(MAX_NESTED_STACK_DEPTH);
+		expect(logger.handleResponseMethodCalledCount).to.equal(MAX_NESTED_STACK_DEPTH);
+	});
+
+	it('@QoS on a method with nested invocations, QoSed method is called by "this" reference', function() {
+		let ni: NestedInvocation = new NestedInvocation();
+		logger.reset();
+		ni.reset();
+		ni.invoke();
 		expect(ni.callbackMethodCalledCount).to.equal(1);
 		expect(logger.initMethodCalledCount).to.equal(MAX_NESTED_STACK_DEPTH);
 		expect(logger.handleRequestMethodCalledCount).to.equal(MAX_NESTED_STACK_DEPTH);

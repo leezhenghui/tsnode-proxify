@@ -234,7 +234,7 @@ class ObjectWrapperTrapHandler {
 	
 	public get(target: any, name: string): any {
 		let method: string = 'ObjectWrapperTrapHandler.get';
-		debug(method + ' [Enter]', name.toString(), target);
+		debug(method + ' [Enter]', name, target);
 		
 		if (isComponentManagedProp === name.toString()) {
 			debug(method + ' [Exit]', name.toString(), true);
@@ -283,7 +283,7 @@ class ObjectWrapperTrapHandler {
 
 		let wrappedMethod: Function = new Proxy(target[name], new MethodWrapperTrapHandler(omd, target, target[name]));
 
-		//note: we need replace the original function in the prototype object
+		//note: we need replace the original function
 		//otherwise, <obj>.<fn> !== this.<fn>
 		target[name] = wrappedMethod;
 
