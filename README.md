@@ -15,22 +15,22 @@ The `proxy` is a well-used design pattern. We can see it in either high level so
 
 ### AOP in Java 
 
-AOP is used widely in java world. In a JEE runtime, the transaction, security are noramlly provided as AOP aspects interanlly. In SOA, the SCA runtime also heavily depends on the AOP to provide QoS, IT-Specific features around the business logic. In Spring, the AOP is actually delivered as a base component in fundamental layer. Indeed, we almost can see it in every middleware software. 
+AOP is used widely in java world. In a JEE runtime, the transaction, security are noramlly provided as AOP aspects interanlly. In SOA, the SCA runtime also heavily depends on the AOP to provide QoS, IT-Specific features around the business logic. In Spring, the AOP is actually delivered as a base component in fundamental layer. Indeed, according to my experiences on JEE server development, AOP provides an excellent solution for the problems in enterprise application, especially in the middleware layer development.
 
-Implementing an AOP framework to advise method execution, the proxy pattern is perfect fit here. The aspect module code can be abstracted and prepared to be **injected** `before` and `after` some method and be able to recieve the execution context, arguments and output(or fault) to the target operation like it was there.  That is reason we usually see the proxy pattern in an AOP framework.  In a pure java world, some typical approaches to achieve this:
+Implementing an AOP framework to advise method execution, the proxy pattern is perfect fit here. The aspect module code can be abstracted, prepared and  **injected** `before` and `after` the method and be able to recieve the execution context, arguments and output(or fault) to the target operation like it was there.  That is reason we usually see the proxy pattern in an AOP framework.  In a pure java world, some typical approaches to achieve this:
 
 - Weave(static-way)
-  - Compile-time weaving(using AspectJ compiler, for example)
-  - Load-time weaving(e.g: AspectJ LTW, which depends on the JVM option -javaagent)
-- JDK Proxy(dynamical-way, for java interface and method only)
-- CGlib Proxy(dynamical-way, can proxy to class, but need the proxied method to be public)
+  - Compile-time weaving(using AspectJ compiler, for example, fully AOP implementation)
+  - Load-time weaving(e.g: AspectJ LTW, which depends on the JVM option -javaagent, fully AOP implementation)
+- JDK Proxy(dynamical-way, for java interface and method execution join point only)
+- CGlib Proxy(dynamical-way, can proxy to class, method execution join point only, but need the proxied method to be public)
 
 > 
-> In a pure java world, using dynamical proxy way for AOP implementation, it often come along with a IoC container, which can take over the responsibility of proxy instance construction and injection. 
+> In a pure java world, using dynamical proxy way for AOP implementation, it usually be used in conjunction with a IoC container, which can take over the responsibility of proxy instance construction and injection. 
 
 ## Movtivation
 
-As mentioned above, the AOP framework can bring us so many benefits to improve the software modularity. Inspired by my long time JEE experience, I believe it would be helpful if we have similar thing in node.js. That is reason we come across to tsnode-proxify project.
+As mentioned above, the AOP framework can bring us so many benefits to improve the software modularity. Inspired by JEE experiences, I believe it would be helpful if we have similar framework in node.js. That is reason I come across to tsnode-proxify project. The goal of tsnode-proxify is NOT to provide a complete AOP implementation, it primarily focus on method execution join point for the moment, will add some IoC features to enable the injection of proxified object in future releases. 
 
 ## Concepts
 
