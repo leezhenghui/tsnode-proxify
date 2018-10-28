@@ -59,7 +59,7 @@ Before we dig into the tsnode-proxify, we need to clarify some concepts.
 					 }, 10); 
 				}
 
-- Invocation completion hints(supported so far)
+- Invocation completion hints(supported so far). This concept is relevant to how we understand `after` of an execution join point
   - method returned (for sync sytle method only)
   - callback method get called (for both sync and async style method)
   - promise get resolved or rejected (for async method with promise as return value) 
