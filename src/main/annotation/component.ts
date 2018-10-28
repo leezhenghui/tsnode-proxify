@@ -38,7 +38,7 @@ const debug:Debug.IDebugger = Debug('proxify:annotation:component');
  *
  */
 export function Component(config ?: {
-	componentName: string,
+	componentName ?: string,
 }): Function {
 	return function(clz: any) {
 		const method: string = 'decorator.component';
@@ -52,7 +52,7 @@ export function Component(config ?: {
 		let md: ComponentMetadata = new ComponentMetadata();
 		md.__className__ = clz.name;
 		md.__target_class__ = clz;
-		md.componentName= (config) ? config.componentName: null;
+		md.componentName= (config && config.componentName) ? config.componentName : clz.name;
 		clz[COMPONENT_METADATA_SLOT] = md;
 
 		let clzWrapper: Function = Wrapper.wrap(clz, null);

@@ -256,24 +256,24 @@ class ObjectWrapperTrapHandler {
 	protected metadata: ComponentMetadata;
 
 	protected reservedJSFunctions: Set<string> = new Set([
-		                                                'constructor', 
-																										'__defineGetter__', 
-																										'__defineSetter__', 
-																										'__lookupGetter__', 
-																										'__lookupSetter__', 
-																										'hasOwnProperty', 
-																										'isPrototypeOf', 
-																										'propertyIsEnumerable', 
-																										'toSource', 
-																										'toLocaleString', 
-																										'toString', 
-																										'unwatch', 
-																										'valueOf', 
-																										'__noSuchMethod__', 
-																										'__proto__', 
-																										'watch',
-																										'Symbol(Symbol.hasInstance)'
-																									 ]); 
+    'constructor', 
+		'__defineGetter__', 
+		'__defineSetter__', 
+		'__lookupGetter__', 
+		'__lookupSetter__', 
+		'hasOwnProperty', 
+		'isPrototypeOf', 
+		'propertyIsEnumerable', 
+		'toSource', 
+		'toLocaleString', 
+		'toString', 
+		'unwatch', 
+		'valueOf', 
+		'__noSuchMethod__', 
+		'__proto__', 
+		'watch',
+		'Symbol(Symbol.hasInstance)'
+	 ]); 
 
 	public set(target: any, name:string, value: any): boolean {
 		let method: string = 'ObjectWrapperTrapHandler.set';

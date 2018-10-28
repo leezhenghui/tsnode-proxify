@@ -94,7 +94,7 @@ describe('@Interceptor Tests', function() {
 	});
 });
 
-describe('@Component, @QoS, @Completion, @Callback Basic Runtime Tests', function() {
+describe('@Component, @QoS, @Completion, @Callback Basic Function Tests', function() {
 	@Interceptor({
 		"interactionStyle": InteractionStyleType.SYNC
 	})
@@ -468,6 +468,8 @@ describe('Integration Tests', function() {
 		public handleResponseMethodCalledCount: number = 0;
 		public handleFaultMethodCalledCount: number = 0;
 
+		private callStack: Array<number> = new Array<number>();
+
 		constructor(config: any) {
 			super(config);	
 		}
@@ -479,26 +481,46 @@ describe('Integration Tests', function() {
 		}
 
 		public init (context: InvocationContext, done: Function): void {
+			const self: Logger = this; 
 			this.debug(this.LOG_PREFIX + ' init');
 			this.initMethodCalledCount ++;
+			context.slots.set(self.getName(), {});
 			done();
 		}
 
 		public handleRequest(context: InvocationContext, done: Function): void {
+			const self: Logger = this; 
 			this.debug(this.LOG_PREFIX + ' handleRequest: ' + this.getTargetFullName(context));
 			this.handleRequestMethodCalledCount ++;
+      let logCtx: any = context.slots.get(self.getName()).iid = self.handleRequestMethodCalledCount;
+			// console.log('---> request iid: ' + this.handleRequestMethodCalledCount);
+			self.callStack.push(self.handleRequestMethodCalledCount);
 			done();	
 		}
 
 		public handleResponse(context: InvocationContext, done: Function): void {
+			const self: Logger = this; 
 			this.debug(this.LOG_PREFIX + ' handleResponse: '+ this.getTargetFullName(context));
 			this.handleResponseMethodCalledCount ++;
+			// console.log('<--- response iid: ' + context.slots.get(self.getName()).iid);
+			let iidInCS: number  = self.callStack.pop();
+
+			if (iidInCS !== context.slots.get(self.getName()).iid) {
+		    throw new Error('Mismatched callstack, actual: ' +  iidInCS + ', but expected: ' + context.slots.get(self.getName()).iid);	
+			}
 			done();	
 		}
 
 		public handleFault(context: InvocationContext, done: Function): void {
+			const self: Logger = this; 
 			this.debug(this.LOG_PREFIX + ' handleFault: '+ this.getTargetFullName(context));
 			this.handleFaultMethodCalledCount ++;
+			// console.log('<--- fault iid: ' + context.slots.get(self.getName()).iid);
+			let iidInCS: number  = self.callStack.pop();
+
+			if (iidInCS !== context.slots.get(self.getName()).iid) {
+		    throw new Error('Mismatched callstack, actual: ' +  iidInCS + ', but expected: ' + context.slots.get(self.getName()).iid);	
+			}
 			done();	
 		}
 
@@ -854,7 +876,7 @@ describe('Integration Tests', function() {
 		});
 	});
 	
-	const MAX_NESTED_STACK_DEPTH = 5;
+	const MAX_NESTED_STACK_DEPTH = 20;
 
 	@Component({
 		"componentName": 'NestedInvocation',

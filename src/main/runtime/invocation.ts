@@ -110,7 +110,7 @@ export class InvocationContext {
 		* current invocation, including domain/tenant
 		* info
 		*/
-	 public slots: Map<string, any>;
+	 public slots: Map<string, any> = new Map<string, any>();
 
 	public _isCallbackSupported(): boolean {
 		if (this.__interaction__.omd.__completion_fn_param_position__ === undefined) {
