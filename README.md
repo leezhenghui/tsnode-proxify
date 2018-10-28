@@ -138,7 +138,7 @@ npm run demo:helloworld
   
 ```
 
-[HelloWord](https://github.com/leezhenghui/tsnode-proxify/tree/master/src/demo/helloworld.ts) contains a simple typescript source file, which contains an simple interceptor as well as a sample class. A brief description for the sample is as below:
+[HelloWord sample](https://github.com/leezhenghui/tsnode-proxify/tree/master/src/demo/helloworld.ts) just contains a simple typescript source file, which includes an simple interceptor as well as a sample class. Briefly the sample looks like below:
 
 ```typescript
 
@@ -155,6 +155,17 @@ class Hello {
 		return 'Hello, ' + name;	
 	}
 }
+
+```
+
+
+```typescript
+//=====================
+//    main
+//====================
+
+let hello: Hello = new Hello();
+console.log('[result]: "' + hello.greet('World') + '"');
 
 ```
 
