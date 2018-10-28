@@ -171,6 +171,23 @@ You can run the unit tests to get a full picture of what tsnode-proxify support 
 ```
 npm run test
 
+> mocha --compilers ts:ts-node/register,tsx:ts-node/register ./src/test/**/*test.ts
+
+    ...
+
+Integration Tests
+	✓ @QoS on static sync non-callback-style method with sync ineraction style interceptor
+	✓ @QoS on sync-return-value-directly method with sync ineraction style interceptor
+	✓ @QoS on sync callback-style method with sync ineraction style interceptor
+	✓ @QoS on async promise-style method with sync ineraction style interceptor (102ms)
+	✓ @QoS on async promise-style method with async ineraction style interceptor (101ms)
+	✓ @QoS on async callback-style method with sync ineraction style interceptor (101ms)
+  ✓ @QoS on async callback-style method with async ineraction style interceptor (251ms)
+	✓ Proxified method should be equals for <obj>.<fn> and this.<fn>
+  ✓ @QoS on a method with nested invocations(sync callback-style combin sync-style interceptor) (753ms)
+	✓ @QoS on a method with nested invocations, QoSed method is called by "this" reference (730ms)
+	✓ @QoS on sync-return-value-directly bind()ed method
+
 ```
 
 ## Join us
