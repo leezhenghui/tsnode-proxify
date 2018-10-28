@@ -3,7 +3,7 @@
 [`tsnode-proxify`](https://github.com/leezhenghui/tsnode-proxify.git) is a proxy-based function hooks and AOP library for node.js. It allows you to extend/provide customized QoS handler and apply these QoS features via typescript decorators(metadata-programming-like syntax) without invasiveness to existing code logic, which increase modularity for your application.
 
 > 
-> Notable, tsnode-proxify depends on typescript decorator feature which marked as **experimental** feature in typescript. In the meanwhile, tsnode-proxify itself is a **WIP** project, not ready to be used in production environment.
+> tsnode-proxify depends on typescript decorator feature which marked as **experimental** feature in typescript. In the meanwhile, tsnode-proxify itself is a **WIP** project, not ready to be used in production environment.
 
 ## Proxy pattern 
 
@@ -13,7 +13,7 @@ The `proxy` is a well-used design pattern. We can see it in either high level so
 
 [`Aspect Oriented Programming`](https://en.wikipedia.org/wiki/Aspect-oriented_programming)(AOP) addresses the problem of cross-cutting concerns. It is a complement to Object-Oriented-Programming(OOP). Not like OOP, which provide class as an key unit of modularity, AOP focus on `aspect` as it's unit of modularity, the `aspect` extract and modularization the code which cut across multiple classes/components for the same concern solution in a system. Such concerns are often termed cross-cutting concerns in AOP literature. In a real-life system, the typical cross-cutting concerns includes logging, security, transaction management, caching, validation, etc. Providing AOP capability is important to increase modularity, and normally be a fundamental feature in a middleware platform.  
 
-### AOP in Java world
+### AOP in Java 
 
 AOP is used widely in java world. In a JEE runtime, the transaction, security are noramlly provided as AOP aspects interanlly. In SOA, the SCA runtime also heavily depends on the AOP to provide QoS, IT-Specific features around the business logic. In Spring, the AOP is actually delivered as a base component in fundamental layer. Indeed, we almost can see it in every middleware software. 
 
@@ -26,7 +26,7 @@ Implementing an AOP framework to advise method execution, the proxy pattern is p
 - CGlib Proxy(dynamical-way, can proxy to class, but need the proxied method to be public)
 
 > 
-> Notable, in a pure java world, using dynamical proxy way for AOP implementation, it often come along with a IoC container, which can take over the responsibility of proxy instance construction and injection. 
+> In a pure java world, using dynamical proxy way for AOP implementation, it often come along with a IoC container, which can take over the responsibility of proxy instance construction and injection. 
 
 ## Movtivation
 
@@ -70,7 +70,7 @@ Totally, we can provide `before` and `after` advise points for below invocatoin 
   - async-callback
   - async-promise
 
-tsnode-proxify enable the aspect modularity to be implemented as an `Interceptor` class(declared by @Interceptor decorator) for a specific QoS intention, which can be dynamically injected into the join-point if a desired @QoS declaration being found on the target method. 
+tsnode-proxify enable the aspect modularity to be implemented as an `Interceptor` class(declared by @Interceptor decorator) for a specific QoS intention, which can be dynamically injected into the join-point if a desired @QoS declaration being claimed on the target method. 
 
 ```typescript
 
@@ -168,7 +168,7 @@ class Hello {
 
 You can run the unit tests to get a full picture of what tsnode-proxify support so far.
 
-```
+```shell
 npm run test
 
 > mocha --compilers ts:ts-node/register,tsx:ts-node/register ./src/test/**/*test.ts
@@ -176,18 +176,17 @@ npm run test
     ...
 
 Integration Tests
-	✓ @QoS on static sync non-callback-style method with sync ineraction style interceptor
-	✓ @QoS on sync-return-value-directly method with sync ineraction style interceptor
-	✓ @QoS on sync callback-style method with sync ineraction style interceptor
-	✓ @QoS on async promise-style method with sync ineraction style interceptor (102ms)
-	✓ @QoS on async promise-style method with async ineraction style interceptor (101ms)
-	✓ @QoS on async callback-style method with sync ineraction style interceptor (101ms)
-  ✓ @QoS on async callback-style method with async ineraction style interceptor (251ms)
-	✓ Proxified method should be equals for <obj>.<fn> and this.<fn>
-  ✓ @QoS on a method with nested invocations(sync callback-style combin sync-style interceptor) (753ms)
-	✓ @QoS on a method with nested invocations, QoSed method is called by "this" reference (730ms)
-	✓ @QoS on sync-return-value-directly bind()ed method
-
+     ✓ @QoS on static sync non-callback-style method with sync ineraction style interceptor
+     ✓ @QoS on sync-return-value-directly method with sync ineraction style interceptor
+     ✓ @QoS on sync callback-style method with sync ineraction style interceptor
+     ✓ @QoS on async promise-style method with sync ineraction style interceptor (102ms)
+     ✓ @QoS on async promise-style method with async ineraction style interceptor (101ms)
+     ✓ @QoS on async callback-style method with sync ineraction style interceptor (101ms)
+     ✓ @QoS on async callback-style method with async ineraction style interceptor (251ms)
+     ✓ Proxified method should be equals for <obj>.<fn> and this.<fn>
+     ✓ @QoS on a method with nested invocations(sync callback-style combin sync-style interceptor) (753ms)
+     ✓ @QoS on a method with nested invocations, QoSed method is called by "this" reference (730ms)
+     ✓ @QoS on sync-return-value-directly bind()ed method
 ```
 
 ## Join us
