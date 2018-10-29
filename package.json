@@ -15,6 +15,7 @@
     "demo:helloworld": "ts-node ./demo/helloworld.ts",
     "demo:helloworld:debug": "DEBUG=proxify* ts-node ./demo/helloworld.ts",
     "demo:stock": "ts-node ./demo/stock.ts",
+		"benchmark": "ts-node ./benchmark/server.ts", 
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "tslint -p tsconfig.json",
     "prepare": "npm run build",
@@ -41,7 +42,10 @@
     "prettier": "^1.14.3",
     "tslint": "^5.11.0",
     "tslint-config-prettier": "^1.15.0",
-    "typescript": "^2.8.3"
+    "typescript": "^2.8.3",
+    "@types/express": "^4.11.1",
+    "body-parser": "^1.18.2",
+    "express": "^4.16.3"
   },
   "engines": {
     "node": ">= 6.9.1",

@@ -2,6 +2,7 @@ src
 demo
 test
 docs
+benchmark
 tsconfig.json
 tslint.json
 .prettierrc
