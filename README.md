@@ -139,6 +139,8 @@ tsnode-proxify enable the aspect modularity to be implemented as an `Interceptor
 
 [HelloWord sample](https://github.com/leezhenghui/tsnode-proxify/tree/master/src/demo/helloworld.ts) just contains a simple typescript source file, which includes an simple interceptor as well as a sample class. Briefly the sample looks like below:
 
+Hello class:
+
 ```typescript
 @Component()
 class Hello {
@@ -154,6 +156,9 @@ class Hello {
 
 ```
 
+Construct a hello instance and call it without any difference than the normal usages.
+
+
 ```typescript
 //=====================
 //    main
@@ -163,6 +168,8 @@ let hello: Hello = new Hello();
 console.log('[result]: "' + hello.greet('World') + '"');
 
 ```
+
+The output result with aspect logger feature:
 
 ```
 npm install
