@@ -968,7 +968,7 @@ describe('Integration Tests', function() {
 		});
 	});
 	
-	it('@QoS on sync-callback method with pass-through/nested callback handler', function() {
+	it('@QoS on sync-callback method which being invoked recursively with a pass-through callback function handler', function() {
 		let ni: NestedInvocation = new NestedInvocation();
 		logger.reset();
 		ni.reset();
@@ -981,7 +981,7 @@ describe('Integration Tests', function() {
 		expect(logger.handleResponseMethodCalledCount).to.equal(MAX_NESTED_STACK_DEPTH);
 	});
 
-	it('@QoS on a method with nested invocations, QoSed method is triggered by "this" reference', function() {
+	it('@QoS on a method with recursive invocations, QoSed method is triggered by "this" reference', function() {
 		let ni: NestedInvocation = new NestedInvocation();
 		logger.reset();
 		ni.reset();

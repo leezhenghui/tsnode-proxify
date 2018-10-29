@@ -1,19 +1,23 @@
 ## Introduction
 
-[`tsnode-proxify`](https://github.com/leezhenghui/tsnode-proxify.git) is a proxy-based method hooks and AOP library for node.js. It allows you to extend/provide customized QoS handler and apply these QoS features via typescript decorators(metadata-programming-like syntax) without invasiveness to existing code logic, which increase modularity for your application.
+[`tsnode-proxify`](https://github.com/leezhenghui/tsnode-proxify.git) is a proxy-based method hooks and AOP library for [node.js](https://nodejs.org) with [typescript](https://www.typescriptlang.org/). It allows you to extend/provide customized QoS handler and apply these QoS features via typescript decorators(metadata-programming-like syntax) without invasiveness to existing code logic, which increase modularity for your application.
 
 > 
 > tsnode-proxify depends on typescript decorator feature which marked as **experimental** feature in typescript. In the meanwhile, tsnode-proxify itself is a **WIP** project, not suggested to be used in production environment for now.
 
-## Proxy pattern 
+## Background 
+
+Before we jump into the tsnode-proxify, let's take one step back to take a look what problems could be resolved by proxy pattern and AOP, why it is so important in JEE. 
+
+### Proxy pattern 
 
 The `proxy` is a well-used design pattern. We can see it in either high level software architecture design, e.g: api-gateway and service mesh in microservices, or a narrow-down specific programming module. Generally speaking, the proxy pattern provides the capablity to implement a contract interface, but adds special functionality on-the-fly behind the sense. 
 
-## AOP
+### AOP
 
 [`Aspect Oriented Programming`](https://en.wikipedia.org/wiki/Aspect-oriented_programming)(AOP) addresses the problem of cross-cutting concerns. It is a complement to Object-Oriented-Programming(OOP). Not like OOP, which provide class as an key unit of modularity, AOP focus on `aspect` as it's unit of modularity, the `aspect` extract and modularization the code which cut across multiple classes/components for the same concern solution in a system. Such concerns are often termed cross-cutting concerns in AOP literature. In a real-life system, the typical cross-cutting concerns includes logging, security, transaction management, caching, validation, etc. Providing AOP capability is important to increase modularity, and normally be a fundamental feature in a middleware platform.  
 
-### AOP in Java 
+#### AOP in Java 
 
 AOP is really popular in java. In a JEE runtime, the transaction, security are noramlly provided as AOP aspects under the hood. In SOA, the SCA runtime also heavily depends on the AOP to provide QoS, IT-Specific features around the business logic. In Spring, the AOP is actually delivered as a base component in fundamental layer and open to upper stack. Indeed, per my experiences on JEE server development, AOP provides an excellent solution for the problems in enterprise application field to increase modularity and make the system more loose-coupled, especially in the middleware product development.
 
@@ -190,8 +194,8 @@ Integration Tests
    ✓ @QoS on async-promise method with async-interceptor (100ms)
    ✓ @QoS on async-callback method with sync-interceptor (101ms)
    ✓ @QoS on async-callback method with async-interceptor (252ms)
-   ✓ @QoS on sync-callback method with pass-through/nested callback handler
-   ✓ @QoS on a method with nested invocations, QoSed method is triggered by "this" reference
+   ✓ @QoS on sync-callback method which being invoked recursively with a pass-through callback function handler 
+   ✓ @QoS on a method with recursive invocations, QoSed method is triggered by "this" reference
    ✓ @QoS on sync-return bind()ed method
 ```
 
