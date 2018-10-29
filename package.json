@@ -7,14 +7,14 @@
   "typings": "./dist/main/index",
   "scripts": {
     "build": "rm -rf dist && tsc --declaration",
-    "unittest": "mocha --compilers ts:ts-node/register,tsx:ts-node/register ./src/test/**/*test.ts",
-    "unittest:debug": "DEBUG=proxify* mocha --compilers ts:ts-node/register,tsx:ts-node/register ./src/test/**/*test.ts",
+    "unittest": "mocha --compilers ts:ts-node/register,tsx:ts-node/register ./test/**/*test.ts",
+    "unittest:debug": "DEBUG=proxify* mocha --compilers ts:ts-node/register,tsx:ts-node/register ./test/**/*test.ts",
     "test": "npm run build && npm run unittest",
     "test:debug": "npm run build && npm run unittest:debug",
     "demo": "npm run demo:helloworld",
-    "demo:helloworld": "ts-node ./src/demo/helloworld.ts",
-    "demo:helloworld:debug": "DEBUG=proxify* ts-node ./src/demo/helloworld.ts",
-    "demo:stock": "ts-node ./src/demo/stock.ts"
+    "demo:helloworld": "ts-node ./demo/helloworld.ts",
+    "demo:helloworld:debug": "DEBUG=proxify* ts-node ./demo/helloworld.ts",
+    "demo:stock": "ts-node ./demo/stock.ts"
   },
   "author": "leezhenghui@gmail.com",
   "license": "Apache-2.0",

@@ -22,16 +22,16 @@
 import { expect }                                      from 'chai';
 import * as Q                                          from 'q';
 import * as Debug                                      from 'debug';
-import { Interceptor }                                 from '../main/annotation/interceptor'; 
-import { Component }                                   from '../main/annotation/component';
-import { QoS }                                         from '../main/annotation/qos';
-import { InteractionStyle, Completion, Callback, Fault, Output }                            from '../main/annotation/interaction';
-import { InteractionStyleType, isComponentManagedProp, isCallbackWrappedProp } from '../main/metadata/common';
-import { INTERCEPTOR_METADATA_SLOT }                   from '../main/metadata/interceptor';
-import { OPERATION_METADATA_SLOT }                     from '../main/metadata/operation';
-import { CALLBACK_METADATA_SLOT }                      from '../main/metadata/callback'; 
-import * as interceptor                                from '../main/runtime/interceptor';
-import { InvocationContext, Processor, ProcessStatus } from '../main/runtime/invocation';
+import { Interceptor }                                 from '../src/annotation/interceptor'; 
+import { Component }                                   from '../src/annotation/component';
+import { QoS }                                         from '../src/annotation/qos';
+import { InteractionStyle, Completion, Callback, Fault, Output } from '../src/annotation/interaction';
+import { InteractionStyleType, isComponentManagedProp, isCallbackWrappedProp } from '../src/metadata/common';
+import { INTERCEPTOR_METADATA_SLOT }                   from '../src/metadata/interceptor';
+import { OPERATION_METADATA_SLOT }                     from '../src/metadata/operation';
+import { CALLBACK_METADATA_SLOT }                      from '../src/metadata/callback'; 
+import * as interceptor                                from '../src/runtime/interceptor';
+import { InvocationContext, Processor, ProcessStatus } from '../src/runtime/invocation';
 
 
 //=================================================

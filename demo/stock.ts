@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import { Interceptor }                                 from '../main/annotation/interceptor'; 
-import { Component }                                   from '../main/annotation/component';
-import { QoS }                                         from '../main/annotation/qos';
-import { InteractionStyle, Completion, Callback, Fault, Output }                            from '../main/annotation/interaction';
-import { InteractionStyleType } from '../main/metadata/common';
-import * as interceptor                                from '../main/runtime/interceptor';
-import { InvocationContext }                from '../main/runtime/invocation';
+import { Interceptor }                                 from '../src/annotation/interceptor'; 
+import { Component }                                   from '../src/annotation/component';
+import { QoS }                                         from '../src/annotation/qos';
+import { InteractionStyle, Completion, Callback, Fault, Output } from '../src/annotation/interaction';
+import { InteractionStyleType }                        from '../src/metadata/common';
+import * as interceptor                                from '../src/runtime/interceptor';
+import { InvocationContext }                           from '../src/runtime/invocation';
 
 @Interceptor({
 	"interactionStyle": InteractionStyleType.SYNC
