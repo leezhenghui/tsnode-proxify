@@ -74,7 +74,7 @@ tsnode-proxify enable the aspect modularity to be implemented as an `Interceptor
 ```typescript
 
 @Interceptor({
-		"interactionStyle": InteractionStyleType.SYNC
+  "interactionStyle": InteractionStyleType.SYNC
 })
   class NoopInterceptor extends interceptor.Interceptor{
   constructor(config: any) {
@@ -183,17 +183,16 @@ npm run test
     ...
 
 Integration Tests
-     ✓ @QoS on static sync non-callback-style method with sync ineraction style interceptor
-     ✓ @QoS on sync-return-value-directly method with sync ineraction style interceptor
-     ✓ @QoS on sync callback-style method with sync ineraction style interceptor
-     ✓ @QoS on async promise-style method with sync ineraction style interceptor (102ms)
-     ✓ @QoS on async promise-style method with async ineraction style interceptor (101ms)
-     ✓ @QoS on async callback-style method with sync ineraction style interceptor (101ms)
-     ✓ @QoS on async callback-style method with async ineraction style interceptor (251ms)
-     ✓ Proxified method should be equals for <obj>.<fn> and this.<fn>
-     ✓ @QoS on a method with nested invocations(sync callback-style combin sync-style interceptor) (753ms)
-     ✓ @QoS on a method with nested invocations, QoSed method is called by "this" reference (730ms)
-     ✓ @QoS on sync-return-value-directly bind()ed method
+   ✓ @QoS on static sync-return method with sync-interceptor
+   ✓ @QoS on sync-return method with sync-interceptor
+   ✓ @QoS on sync-callback method with sync-interceptor
+   ✓ @QoS on async-promise method with sync-interceptor (102ms)
+   ✓ @QoS on async-promise method with async-interceptor (100ms)
+   ✓ @QoS on async-callback method with sync-interceptor (101ms)
+   ✓ @QoS on async-callback method with async-interceptor (252ms)
+   ✓ @QoS on sync-callback method with pass-through/nested callback handler
+   ✓ @QoS on a method with nested invocations, QoSed method is triggered by "this" reference
+   ✓ @QoS on sync-return bind()ed method
 ```
 
 ## Join us

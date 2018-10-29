@@ -33,7 +33,10 @@ import { CALLBACK_METADATA_SLOT }                      from '../main/metadata/ca
 import * as interceptor                                from '../main/runtime/interceptor';
 import { InvocationContext, Processor, ProcessStatus } from '../main/runtime/invocation';
 
-describe('@Interceptor Tests', function() {
+
+//=================================================
+//   Interceptor Registry Function Test Content
+//=================================================
 
 	@Interceptor({
 		"interactionStyle": InteractionStyleType.SYNC
@@ -83,18 +86,10 @@ describe('@Interceptor Tests', function() {
 		}
 	}
 
-	it('Register Interceptor Class/Metadata Via Annotation', function() {
-		let creator: Function = interceptor.interceptorRegistry.getInterceptorClass(FooInterceptor.name);	
-		expect(creator.name).to.equal(FooInterceptor.name);
-		creator = interceptor.interceptorRegistry.getInterceptorClass(BarInterceptor.name);
-		expect(creator.name).to.equal(BarInterceptor.name);
-		expect(creator[INTERCEPTOR_METADATA_SLOT].interactionStyle).to.equal(InteractionStyleType.SYNC);
-		creator = interceptor.interceptorRegistry.getInterceptorClass(BarInterceptorWithoutAnnotation.name);
-		expect(creator).to.equal(null);
-	});
-});
+//=================================================
+// Proxify Decorators Basic Function Test Content
+//=================================================
 
-describe('@Component, @QoS, @Completion, @Callback Basic Function Tests', function() {
 	@Interceptor({
 		"interactionStyle": InteractionStyleType.SYNC
 	})
@@ -285,176 +280,9 @@ describe('@Component, @QoS, @Completion, @Callback Basic Function Tests', functi
 		}	
 	}
 
-	it('Reflect to create an interceptor instance', function() {
-		let iFn: Function = LoggingInterceptor;
-		let initParams = [];
-
-		expect(iFn.name).to.equal('LoggingInterceptor');
-		let i: interceptor.Interceptor = Reflect.construct(iFn, initParams);
-		expect(i instanceof interceptor.Interceptor).to.equal(true);
-		expect(i instanceof Processor).to.equal(true);
-		expect(i.getName()).to.equal('LoggingInterceptor');
-	});
-
-	it('Instanceof Operator Tests on the Class without Proxify Annotation', function() {
-		let foo: Foo = new Foo();
-		expect(foo instanceof Foo).to.equal(true);
-		expect(foo instanceof Stock).to.equal(false);
-	});
-
-	it('Instanceof Operator Tests on the Class with Proxify Annotation', function() {
-		let foo: USStock = new USStock('IBM', 100);
-		expect(foo instanceof Stock).to.equal(true);
-	});
-
-	it('Class Without Proxify annotation should not be wrapped by Proxy', function() {
-		expect(Stock[isComponentManagedProp]).to.equal(undefined);
-	});
-
-	it('Class With @Component should be wrapped by Proxy', function() {
-		expect(HKStock[isComponentManagedProp]).to.equal(true);
-		expect(USStock[isComponentManagedProp]).to.equal(true);
-	});
-
-	it('Typeof operation on the Class With @Component should be wrapped by Proxy', function() {
-		expect(typeof HKStock).to.equal('function');
-		expect(typeof USStock).to.equal('function');
-	});
-
-	it('Instanceof operation on the Class With @Component should be wrapped by Proxy', function() {
-		expect(HKStock instanceof Function).to.equal(true);
-		expect(USStock instanceof Function).to.equal(true);
-		expect(Stock instanceof Function).to.equal(true);
-	});
-
-	it('Object instance created by Wrapped Class should also be wrapped by Proxy', function() {
-		let stock: USStock = new USStock('IBM', 100);
-		expect(stock[isComponentManagedProp]).to.equal(true);
-	});
-
-	it('Typeof operator on object instance which created by Wrapped Class', function() {
-		let stock: USStock = new USStock('IBM', 100);
-		expect(typeof stock).to.equal('object');
-	});
-
-	it('Instanceof operator should work on wrapped object which is created by wrapped class', function() {
-		let stock: HKStock = new HKStock('Tecent', 200);
-		expect(stock instanceof Object).to.equal(true);
-		expect(stock instanceof HKStock).to.equal(true);
-		expect(stock instanceof Stock).to.equal(true);
-		expect(stock instanceof USStock).to.equal(false);
-		expect(stock instanceof Foo).to.equal(false);
-	});
-
-	it('Constructor property of object instance not equals to Proxied constuctor', function() {
-		let stock: USStock = new USStock('IBM', 100);
-		// the stock is created by original USStock class
-		// within decorator factory function, the USStock used out of
-		// decorator will point to the proxied one 
-		expect(stock.constructor === USStock).to.equal(false);
-	});
-
-	it('Proxied object __proto__ property equals to <proxied-constructor>.prorotype', function() {
-		let protoKey: string = '__proto__';
-		let stock: USStock = new USStock('IBM', 100);
-		// console.log('USStock.prototype:', USStock.prototype);
-		// console.log('stock.__proto__', stock[protoKey]);
-		expect(stock[protoKey]=== USStock.prototype).to.equal(true);
-		expect(stock.constructor.prototype === USStock.prototype).to.equal(true);
-	});
-
-	it('Object instance method contains metadata attachment', function() {
-		let stock: USStock = new USStock('IBM', 100);
-		expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
-		expect(stock.getPrice[OPERATION_METADATA_SLOT].sizeOfQoS()).to.equal(2);
-	});
-
-	it('Method which returned by bind() method contains metadata attachment', function() {
-		let stock: USStock = new USStock('IBM', 100);
-		expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
-		expect(stock.getPrice.bind(stock)[OPERATION_METADATA_SLOT] !== undefined).to.equal(true);
-	});
-
-	it('@QoS on static method', function() {
-		expect(USStock.getVersion[isComponentManagedProp]).to.equal(true);
-		expect(USStock.getVersion[OPERATION_METADATA_SLOT].sizeOfQoS()).to.equal(2);
-	});
-
-	it('Method without QoS decorator should NOT be wrapped by Proxy', function() {
-		let stock: USStock = new USStock('IBM', 100);
-		expect(stock.printPrice[isComponentManagedProp]).to.equal(undefined);
-	});
-
-	it('@QoS wrapped proxy', function() {
-		let stock: USStock = new USStock('IBM', 100);
-		stock.getPrice('IBM', null);
-		expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
-	});
-
-	it('@QoS on object method with bind()ed context', function() {
-		let stock: USStock = new USStock('IBM', 100);
-		let v: any = stock.getPrice('IBM', null);
-		expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
-		let getPriceFn: Function = stock.getPrice.bind(stock);
-		expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
-		expect(getPriceFn[isComponentManagedProp]).to.equal(true);
-		expect(v).to.equal(100);
-	});
-
-	it('@QoS on static method invocation', function() {
-		let v: string = USStock.getVersion(null);
-		expect(USStock.getVersion[isComponentManagedProp]).to.equal(true);
-		expect(v).to.equal('v1.0.0');
-	});
-
-	it('@Fault decorator metadata test', function() {
-		let cb = new CBClass();
-		expect(cb.cb[CALLBACK_METADATA_SLOT].sizeOfFaultParams()).to.equal(1);
-		expect(cb.cb[CALLBACK_METADATA_SLOT].isFaultParam(0)).to.equal(true);
-	});
-
-	it('@Output decorator metadata test', function() {
-		let cb = new CBClass();
-		expect(cb.cb[CALLBACK_METADATA_SLOT].sizeOfOutputParams()).to.equal(1);
-		expect(cb.cb[CALLBACK_METADATA_SLOT].isOutputParam(1)).to.equal(true);
-	});
-
-	it('@Completion on object method', function() {
-		let completion_fn_position = '__completion_fn_param_position__';
-		let stock: USStock = new USStock('IBM', 100);
-		expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
-		expect(stock.getPrice[OPERATION_METADATA_SLOT][completion_fn_position]).to.equal(1);
-		let cbobj =  new CBClass();
-		let cbm = cbobj.cb;
-		stock.getPrice('IBM', cbm.bind(cbobj));
-		// stock.getPrice('IBM', cbm);
-		// console.log('>>>>', cbobj);
-		expect(cbobj.reval).to.equal(100);
-	});
-
-	it('@Completion on a static method', function() {
-		let completion_fn_position = '__completion_fn_param_position__';
-		expect(USStock.getVersion[isComponentManagedProp]).to.equal(true);
-		expect(USStock.getVersion[OPERATION_METADATA_SLOT][completion_fn_position]).to.equal(0);
-	});
-
-	it('@Completion decorator points to a static callback method', function() {
-		expect(USStock.getVersion[isComponentManagedProp]).to.equal(true);
-
-		let cbobj =  new CBClass();
-		let cbm = cbobj.cb;
-		expect(cbm[CALLBACK_METADATA_SLOT].sizeOfOutputParams()).to.equal(1);
-		expect(cbm[CALLBACK_METADATA_SLOT].isOutputParam(1)).to.equal(true);
-		expect(cbm[CALLBACK_METADATA_SLOT].sizeOfFaultParams()).to.equal(1);
-		expect(cbm[CALLBACK_METADATA_SLOT].isFaultParam(0)).to.equal(true);
-		USStock.getVersion(cbm.bind(cbobj));
-		// USStock.getVersion(cbm);
-		// console.log('>>>>', cbobj);
-		expect(cbobj.reval).to.equal('v1.0.0');
-	});
-});
-
-describe('Integration Tests', function() {
+//=================================================
+//   Integration Test Content
+//=================================================
 
 	@Interceptor({
 		"interactionStyle": InteractionStyleType.SYNC
@@ -771,111 +599,6 @@ describe('Integration Tests', function() {
 		}
 	}
 
-	it('@QoS on static sync non-callback-style method with sync ineraction style interceptor', function() {
-		let ss: StockService = new StockService('IBM', 100);
-		logger.reset();
-		let unit: string = StockService.getUnit();
-		expect(unit).to.equal('$');
-		expect(logger.initMethodCalledCount).to.equal(1);
-		expect(logger.handleRequestMethodCalledCount).to.equal(1);
-		expect(logger.handleResponseMethodCalledCount).to.equal(1);
-	});
-
-	it('@QoS on sync-return-value-directly method with sync ineraction style interceptor', function() {
-		let ss: StockService = new StockService('IBM', 100);
-		logger.reset();
-		let price: number = ss.getPrice('IBM');
-		expect(price).to.equal(100);
-		expect(logger.initMethodCalledCount).to.equal(1);
-		expect(logger.handleRequestMethodCalledCount).to.equal(1);
-		expect(logger.handleResponseMethodCalledCount).to.equal(1);
-	});
-	
-	it('@QoS on sync callback-style method with sync ineraction style interceptor', function() {
-		let ss: StockService = new StockService('IBM', 100);
-		logger.reset();
-		ss.reset();
-		ss.printPrice('IBM', ss.print.bind(ss));
-		expect(ss.isCallbackCalled).to.equal(true);
-		expect(logger.initMethodCalledCount).to.equal(1);
-		expect(logger.handleRequestMethodCalledCount).to.equal(1);
-		expect(logger.handleResponseMethodCalledCount).to.equal(1);
-	});
-	
-	it('@QoS on async promise-style method with sync ineraction style interceptor', function() {
-		let ss: StockService = new StockService('IBM', 100);
-		logger.reset();
-		ss.reset();
-		let promsie: Q.Promise<number> = ss.getPriceAsync('IBM');
-		// console.log('--> Waiting for promise resolved');
-		return promsie.then(function(price) {
-			expect(price).to.equal(100);
-			expect(logger.initMethodCalledCount).to.equal(1);
-			expect(logger.handleRequestMethodCalledCount).to.equal(1);
-			expect(logger.handleResponseMethodCalledCount).to.equal(1);
-		});
-	});
-	
-	it('@QoS on async promise-style method with async ineraction style interceptor', function() {
-		let ss: StockService = new StockService('IBM', 100);
-		asyncLogger.reset();
-		ss.reset();
-		let promsie: Q.Promise<number> = ss.getPriceAsyncWithAsyncInterceptor('IBM');
-		// console.log('--> Waiting for promise resolved');
-		return promsie.then(function(price) {
-			expect(price).to.equal(100);
-			expect(asyncLogger.initMethodCalledCount).to.equal(1);
-			expect(asyncLogger.handleRequestMethodCalledCount).to.equal(1);
-			expect(asyncLogger.handleResponseMethodCalledCount).to.equal(1);
-		});
-	});
-	
-	it('@QoS on async callback-style method with sync ineraction style interceptor', function() {
-		let ss: StockService = new StockService('IBM', 100);
-		logger.reset();
-		ss.reset();
-		let isCallbackCalled: boolean = false;
-		let deferred: Q.Deferred<any> = Q.defer<any>();
-
-		ss.getPriceAsyncCallback('IBM', function(error: any, result: number) {
-			isCallbackCalled = true;
-			deferred.resolve();
-		});
-
-		return deferred.promise.then(function() {
-			expect(isCallbackCalled).to.equal(true);
-			expect(logger.initMethodCalledCount).to.equal(1);
-			expect(logger.handleRequestMethodCalledCount).to.equal(1);
-			expect(logger.handleResponseMethodCalledCount).to.equal(1);
-			// console.log('---> asset done');
-		});
-	});
-	
-	it('@QoS on async callback-style method with async ineraction style interceptor', function() {
-		let ss: StockService = new StockService('IBM', 100);
-		asyncLogger.reset();
-		ss.reset();
-		let isCallbackCalled: boolean = false;
-		let deferred: Q.Deferred<any> = Q.defer<any>();
-
-		ss.getPriceAsyncCallbackWithAsyncInterceptor('IBM', function(error: any, result: number) {
-			isCallbackCalled = true;
-
-			// wait for invocation completion
-			setTimeout(function() {
-				deferred.resolve();
-			}, DELAY_EXECUTION_TIME + 50);
-		});
-
-		return deferred.promise.then(function() {
-			expect(isCallbackCalled).to.equal(true);
-			expect(asyncLogger.initMethodCalledCount).to.equal(1);
-			expect(asyncLogger.handleRequestMethodCalledCount).to.equal(1);
-			expect(asyncLogger.handleResponseMethodCalledCount).to.equal(1);
-			// console.log('---> asset done');
-		});
-	});
-	
 	const MAX_NESTED_STACK_DEPTH = 160;
 
 	@Component({
@@ -935,14 +658,317 @@ describe('Integration Tests', function() {
 			return false;
 		}
 	}
+
+//=================================================
+//   Interceptor Registry Function Test
+//=================================================
+
+describe('@Interceptor Tests', function() {
+
+	it('Register Interceptor Class/Metadata Via Annotation', function() {
+		let creator: Function = interceptor.interceptorRegistry.getInterceptorClass(FooInterceptor.name);	
+		expect(creator.name).to.equal(FooInterceptor.name);
+		creator = interceptor.interceptorRegistry.getInterceptorClass(BarInterceptor.name);
+		expect(creator.name).to.equal(BarInterceptor.name);
+		expect(creator[INTERCEPTOR_METADATA_SLOT].interactionStyle).to.equal(InteractionStyleType.SYNC);
+		creator = interceptor.interceptorRegistry.getInterceptorClass(BarInterceptorWithoutAnnotation.name);
+		expect(creator).to.equal(null);
+	});
+});
+
+//=================================================
+//   Proxify Decorators Basic Function Test
+//=================================================
+
+describe('@Component, @QoS, @Completion, @Callback Basic Function Tests', function() {
+
+	it('Reflect to create an interceptor instance', function() {
+		let iFn: Function = LoggingInterceptor;
+		let initParams = [];
+
+		expect(iFn.name).to.equal('LoggingInterceptor');
+		let i: interceptor.Interceptor = Reflect.construct(iFn, initParams);
+		expect(i instanceof interceptor.Interceptor).to.equal(true);
+		expect(i instanceof Processor).to.equal(true);
+		expect(i.getName()).to.equal('LoggingInterceptor');
+	});
+
+	it('Instanceof Operator Tests on the Class without Proxify Annotation', function() {
+		let foo: Foo = new Foo();
+		expect(foo instanceof Foo).to.equal(true);
+		expect(foo instanceof Stock).to.equal(false);
+	});
+
+	it('Instanceof Operator Tests on the Class with Proxify Annotation', function() {
+		let foo: USStock = new USStock('IBM', 100);
+		expect(foo instanceof Stock).to.equal(true);
+	});
+
+	it('Class Without Proxify annotation should not be wrapped by Proxy', function() {
+		expect(Stock[isComponentManagedProp]).to.equal(undefined);
+	});
+
+	it('Class With @Component should be wrapped by Proxy', function() {
+		expect(HKStock[isComponentManagedProp]).to.equal(true);
+		expect(USStock[isComponentManagedProp]).to.equal(true);
+	});
+
+	it('Typeof operation on the Class With @Component should be wrapped by Proxy', function() {
+		expect(typeof HKStock).to.equal('function');
+		expect(typeof USStock).to.equal('function');
+	});
+
+	it('Instanceof operation on the Class With @Component should be wrapped by Proxy', function() {
+		expect(HKStock instanceof Function).to.equal(true);
+		expect(USStock instanceof Function).to.equal(true);
+		expect(Stock instanceof Function).to.equal(true);
+	});
+
+	it('Object instance created by Wrapped Class should also be wrapped by Proxy', function() {
+		let stock: USStock = new USStock('IBM', 100);
+		expect(stock[isComponentManagedProp]).to.equal(true);
+	});
+
+	it('Typeof operator on object instance which created by Wrapped Class', function() {
+		let stock: USStock = new USStock('IBM', 100);
+		expect(typeof stock).to.equal('object');
+	});
+
+	it('Instanceof operator should work on wrapped object which is created by wrapped class', function() {
+		let stock: HKStock = new HKStock('Tecent', 200);
+		expect(stock instanceof Object).to.equal(true);
+		expect(stock instanceof HKStock).to.equal(true);
+		expect(stock instanceof Stock).to.equal(true);
+		expect(stock instanceof USStock).to.equal(false);
+		expect(stock instanceof Foo).to.equal(false);
+	});
+
+	it('Constructor property of object instance not equals to Proxied constuctor', function() {
+		let stock: USStock = new USStock('IBM', 100);
+		// the stock is created by original USStock class
+		// within decorator factory function, the USStock used out of
+		// decorator will point to the proxied one 
+		expect(stock.constructor === USStock).to.equal(false);
+	});
+
+	it('Proxied object __proto__ property equals to <proxied-constructor>.prorotype', function() {
+		let protoKey: string = '__proto__';
+		let stock: USStock = new USStock('IBM', 100);
+		// console.log('USStock.prototype:', USStock.prototype);
+		// console.log('stock.__proto__', stock[protoKey]);
+		expect(stock[protoKey]=== USStock.prototype).to.equal(true);
+		expect(stock.constructor.prototype === USStock.prototype).to.equal(true);
+	});
+
+	it('Object instance method contains metadata attachment', function() {
+		let stock: USStock = new USStock('IBM', 100);
+		expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
+		expect(stock.getPrice[OPERATION_METADATA_SLOT].sizeOfQoS()).to.equal(2);
+	});
+
+	it('Method which returned by bind() method contains metadata attachment', function() {
+		let stock: USStock = new USStock('IBM', 100);
+		expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
+		expect(stock.getPrice.bind(stock)[OPERATION_METADATA_SLOT] !== undefined).to.equal(true);
+	});
+
+	it('@QoS on static method', function() {
+		expect(USStock.getVersion[isComponentManagedProp]).to.equal(true);
+		expect(USStock.getVersion[OPERATION_METADATA_SLOT].sizeOfQoS()).to.equal(2);
+	});
+
+	it('Method without QoS decorator should NOT be wrapped by Proxy', function() {
+		let stock: USStock = new USStock('IBM', 100);
+		expect(stock.printPrice[isComponentManagedProp]).to.equal(undefined);
+	});
+
+	it('@QoS wrapped proxy', function() {
+		let stock: USStock = new USStock('IBM', 100);
+		stock.getPrice('IBM', null);
+		expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
+	});
+
+	it('@QoS on object method with bind()ed context', function() {
+		let stock: USStock = new USStock('IBM', 100);
+		let v: any = stock.getPrice('IBM', null);
+		expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
+		let getPriceFn: Function = stock.getPrice.bind(stock);
+		expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
+		expect(getPriceFn[isComponentManagedProp]).to.equal(true);
+		expect(v).to.equal(100);
+	});
+
+	it('@QoS on static method invocation', function() {
+		let v: string = USStock.getVersion(null);
+		expect(USStock.getVersion[isComponentManagedProp]).to.equal(true);
+		expect(v).to.equal('v1.0.0');
+	});
+
+	it('@Fault decorator metadata test', function() {
+		let cb = new CBClass();
+		expect(cb.cb[CALLBACK_METADATA_SLOT].sizeOfFaultParams()).to.equal(1);
+		expect(cb.cb[CALLBACK_METADATA_SLOT].isFaultParam(0)).to.equal(true);
+	});
+
+	it('@Output decorator metadata test', function() {
+		let cb = new CBClass();
+		expect(cb.cb[CALLBACK_METADATA_SLOT].sizeOfOutputParams()).to.equal(1);
+		expect(cb.cb[CALLBACK_METADATA_SLOT].isOutputParam(1)).to.equal(true);
+	});
+
+	it('@Completion on object method', function() {
+		let completion_fn_position = '__completion_fn_param_position__';
+		let stock: USStock = new USStock('IBM', 100);
+		expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
+		expect(stock.getPrice[OPERATION_METADATA_SLOT][completion_fn_position]).to.equal(1);
+		let cbobj =  new CBClass();
+		let cbm = cbobj.cb;
+		stock.getPrice('IBM', cbm.bind(cbobj));
+		// stock.getPrice('IBM', cbm);
+		// console.log('>>>>', cbobj);
+		expect(cbobj.reval).to.equal(100);
+	});
+
+	it('@Completion on a static method', function() {
+		let completion_fn_position = '__completion_fn_param_position__';
+		expect(USStock.getVersion[isComponentManagedProp]).to.equal(true);
+		expect(USStock.getVersion[OPERATION_METADATA_SLOT][completion_fn_position]).to.equal(0);
+	});
+
+	it('@Completion decorator points to a static callback method', function() {
+		expect(USStock.getVersion[isComponentManagedProp]).to.equal(true);
+
+		let cbobj =  new CBClass();
+		let cbm = cbobj.cb;
+		expect(cbm[CALLBACK_METADATA_SLOT].sizeOfOutputParams()).to.equal(1);
+		expect(cbm[CALLBACK_METADATA_SLOT].isOutputParam(1)).to.equal(true);
+		expect(cbm[CALLBACK_METADATA_SLOT].sizeOfFaultParams()).to.equal(1);
+		expect(cbm[CALLBACK_METADATA_SLOT].isFaultParam(0)).to.equal(true);
+		USStock.getVersion(cbm.bind(cbobj));
+		// USStock.getVersion(cbm);
+		// console.log('>>>>', cbobj);
+		expect(cbobj.reval).to.equal('v1.0.0');
+	});
 	
 	it('Proxified method should be equals for <obj>.<fn> and this.<fn>', function() {
 		let ni: NestedInvocation = new NestedInvocation();
 		expect(true).to.equal(ni.equals(ni));
 		expect(true).to.equal(ni.fnEquals(ni.nestInvoke));
 	});
+});
+
+//=================================================
+//             Integration Test
+//=================================================
+
+describe('Integration Tests', function() {
+
+	it('@QoS on static sync-return method with sync-interceptor', function() {
+		let ss: StockService = new StockService('IBM', 100);
+		logger.reset();
+		let unit: string = StockService.getUnit();
+		expect(unit).to.equal('$');
+		expect(logger.initMethodCalledCount).to.equal(1);
+		expect(logger.handleRequestMethodCalledCount).to.equal(1);
+		expect(logger.handleResponseMethodCalledCount).to.equal(1);
+	});
+
+	it('@QoS on sync-return method with sync-interceptor', function() {
+		let ss: StockService = new StockService('IBM', 100);
+		logger.reset();
+		let price: number = ss.getPrice('IBM');
+		expect(price).to.equal(100);
+		expect(logger.initMethodCalledCount).to.equal(1);
+		expect(logger.handleRequestMethodCalledCount).to.equal(1);
+		expect(logger.handleResponseMethodCalledCount).to.equal(1);
+	});
 	
-	it('@QoS on a method with nested invocations(sync callback-style combin sync-style interceptor)', function() {
+	it('@QoS on sync-callback method with sync-interceptor', function() {
+		let ss: StockService = new StockService('IBM', 100);
+		logger.reset();
+		ss.reset();
+		ss.printPrice('IBM', ss.print.bind(ss));
+		expect(ss.isCallbackCalled).to.equal(true);
+		expect(logger.initMethodCalledCount).to.equal(1);
+		expect(logger.handleRequestMethodCalledCount).to.equal(1);
+		expect(logger.handleResponseMethodCalledCount).to.equal(1);
+	});
+	
+	it('@QoS on async-promise method with sync-interceptor', function() {
+		let ss: StockService = new StockService('IBM', 100);
+		logger.reset();
+		ss.reset();
+		let promsie: Q.Promise<number> = ss.getPriceAsync('IBM');
+		// console.log('--> Waiting for promise resolved');
+		return promsie.then(function(price) {
+			expect(price).to.equal(100);
+			expect(logger.initMethodCalledCount).to.equal(1);
+			expect(logger.handleRequestMethodCalledCount).to.equal(1);
+			expect(logger.handleResponseMethodCalledCount).to.equal(1);
+		});
+	});
+	
+	it('@QoS on async-promise method with async-interceptor', function() {
+		let ss: StockService = new StockService('IBM', 100);
+		asyncLogger.reset();
+		ss.reset();
+		let promsie: Q.Promise<number> = ss.getPriceAsyncWithAsyncInterceptor('IBM');
+		// console.log('--> Waiting for promise resolved');
+		return promsie.then(function(price) {
+			expect(price).to.equal(100);
+			expect(asyncLogger.initMethodCalledCount).to.equal(1);
+			expect(asyncLogger.handleRequestMethodCalledCount).to.equal(1);
+			expect(asyncLogger.handleResponseMethodCalledCount).to.equal(1);
+		});
+	});
+	
+	it('@QoS on async-callback method with sync-interceptor', function() {
+		let ss: StockService = new StockService('IBM', 100);
+		logger.reset();
+		ss.reset();
+		let isCallbackCalled: boolean = false;
+		let deferred: Q.Deferred<any> = Q.defer<any>();
+
+		ss.getPriceAsyncCallback('IBM', function(error: any, result: number) {
+			isCallbackCalled = true;
+			deferred.resolve();
+		});
+
+		return deferred.promise.then(function() {
+			expect(isCallbackCalled).to.equal(true);
+			expect(logger.initMethodCalledCount).to.equal(1);
+			expect(logger.handleRequestMethodCalledCount).to.equal(1);
+			expect(logger.handleResponseMethodCalledCount).to.equal(1);
+			// console.log('---> asset done');
+		});
+	});
+	
+	it('@QoS on async-callback method with async-interceptor', function() {
+		let ss: StockService = new StockService('IBM', 100);
+		asyncLogger.reset();
+		ss.reset();
+		let isCallbackCalled: boolean = false;
+		let deferred: Q.Deferred<any> = Q.defer<any>();
+
+		ss.getPriceAsyncCallbackWithAsyncInterceptor('IBM', function(error: any, result: number) {
+			isCallbackCalled = true;
+
+			// wait for invocation completion
+			setTimeout(function() {
+				deferred.resolve();
+			}, DELAY_EXECUTION_TIME + 50);
+		});
+
+		return deferred.promise.then(function() {
+			expect(isCallbackCalled).to.equal(true);
+			expect(asyncLogger.initMethodCalledCount).to.equal(1);
+			expect(asyncLogger.handleRequestMethodCalledCount).to.equal(1);
+			expect(asyncLogger.handleResponseMethodCalledCount).to.equal(1);
+			// console.log('---> asset done');
+		});
+	});
+	
+	it('@QoS on sync-callback method with pass-through/nested callback handler', function() {
 		let ni: NestedInvocation = new NestedInvocation();
 		logger.reset();
 		ni.reset();
@@ -955,7 +981,7 @@ describe('Integration Tests', function() {
 		expect(logger.handleResponseMethodCalledCount).to.equal(MAX_NESTED_STACK_DEPTH);
 	});
 
-	it('@QoS on a method with nested invocations, QoSed method is called by "this" reference', function() {
+	it('@QoS on a method with nested invocations, QoSed method is triggered by "this" reference', function() {
 		let ni: NestedInvocation = new NestedInvocation();
 		logger.reset();
 		ni.reset();
@@ -966,7 +992,7 @@ describe('Integration Tests', function() {
 		expect(logger.handleResponseMethodCalledCount).to.equal(MAX_NESTED_STACK_DEPTH);
 	});
 
-	it('@QoS on sync-return-value-directly bind()ed method', function() {
+	it('@QoS on sync-return bind()ed method', function() {
 		let ss: StockService = new StockService('IBM', 100);
 		logger.reset();
 		let bindedFn = ss.getPrice.bind(ss);
