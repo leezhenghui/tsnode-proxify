@@ -503,7 +503,7 @@ export class EndpointInvoker {
 		// only contains sync interceptors in request path
 		//================================================= 
 
-		// sync-callback or sync-directly
+		// sync-callback or sync-return
 		if ((context.__interaction__.__completion_style__ === CompletionStyle.SYNC_DIRECTLY || context.__interaction__.__completion_style__ === CompletionStyle.SYNC_CALLBACK)  &&  
 			processStatus.interactionType === InteractionType.INTERACTION_INVOKE_RESULT) {
 			if (context.__interaction__.__completion_style__ === CompletionStyle.SYNC_DIRECTLY) {

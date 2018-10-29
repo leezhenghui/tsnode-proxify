@@ -5,9 +5,9 @@
 > 
 > tsnode-proxify depends on typescript decorator feature which marked as **experimental** feature in typescript. In the meanwhile, tsnode-proxify itself is a **WIP** project, not suggested to be used in production environment for now.
 
-## Background 
+## Background
 
-Before we jump into the tsnode-proxify, let's take one step back to take a look what problems could be resolved by proxy pattern and AOP, why it is so important in JEE. 
+Before we jump into the tsnode-proxify, let's take one step back to take a look what problems could be resolved by proxy pattern and AOP, why it is so important in JEE.
 
 ### Proxy pattern 
 
@@ -42,7 +42,7 @@ Before we dig into the tsnode-proxify, we need to clarify some concepts.
 
 1. **Interaction style** for a method call in node.js
 
-    - Sync: The method `completion` should be the same time point as method invocation being returned. 
+    - `Sync`: The method completion should be the same time point as method invocation being returned. 
 
      ```
      e.g: 
@@ -51,7 +51,7 @@ Before we dig into the tsnode-proxify, we need to clarify some concepts.
      }
      ```
     
-    - Async: The method `completion` will be done in a future certain time point after the moment of method invocation being returned. 
+    - `Async`: The method completion will be done in a future certain time point after the moment of method invocation being returned. 
 
      ```
      e.g: 
@@ -63,25 +63,25 @@ Before we dig into the tsnode-proxify, we need to clarify some concepts.
      }
      ```
 
-2. **Completion hints**:  invocation completion hint is the concept relevant to how tsnode-proxify runtime understand `after` of an execution join point. It should be mark as the moment of method logic execution done.
+2. **Completion hints**: invocation completion hint is the concept relevant to how tsnode-proxify runtime understand `after` of an execution join point. It should be mark as the moment of method logic execution done.
 
-    - method returned (for typical sync style method only)
+    - target method getting returned (of course, this is for sync style method only)
     
-    - callback method get called (for both sync and async style method)
+    - the callback method getting called (adopt to both sync and async style method)
     
-    - promise get resolved or rejected (for async method with promise as return value) 
+    - the returned promise's status change from pending to resolved or rejected (for async method with promise as return value only)  
 
-3. So, at the time being, tsnode-proxify can support below combinations with `before` and `after` advise join points
+3. `tsnode-proxify` can support below **interaction style and completion hints combinations** with `before` and `after` advise join points
 
-    - sync-return
+    - `sync-return`
     
-    - sync-callback
+    - `sync-callback`
     
-    - async-callback
+    - `async-callback`
     
-    - async-promise
+    - `async-promise`
 
-tsnode-proxify enable the aspect modularity to be implemented as an `Interceptor` class(declared by @Interceptor decorator) for a specific QoS intention, which can be dynamically injected into the join-point if a desired @QoS declaration being claimed on the target method. 
+`tsnode-proxify` enable the aspect modularity to be implemented as an `Interceptor` class(declared by @Interceptor decorator) for a specific QoS intention, which can be dynamically injected into the join-point if a desired @QoS declaration being claimed on the target method. 
 
 ```typescript
 
@@ -127,7 +127,8 @@ tsnode-proxify enable the aspect modularity to be implemented as an `Interceptor
 
 - Prerequsites 
   - node.js 
-  - typescript toolkits 
+  - typescript toolkits(including tsc and ts-node command)
+  - [Q](https://github.com/kriskowal/q) based promise
 
 - git clone 
 
@@ -155,7 +156,6 @@ class Hello {
 ```
 
 Construct a hello instance and call it without any difference than the normal usages.
-
 
 ```typescript
 //=====================
