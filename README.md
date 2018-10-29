@@ -136,7 +136,7 @@ Before we dig into the tsnode-proxify, we need to clarify some concepts.
 
 - Run the helloworld sample 
 
-[HelloWord sample](https://github.com/leezhenghui/tsnode-proxify/tree/master/src/demo/helloworld.ts) just contains a simple typescript source file, which includes an simple interceptor as well as a sample class. Briefly the sample looks like below:
+[HelloWord sample](https://github.com/leezhenghui/tsnode-proxify/tree/master/demo/helloworld.ts) just contains a simple typescript source file, which includes an simple interceptor as well as a sample class. Briefly the sample looks like below:
 
 Hello class:
 
@@ -175,7 +175,7 @@ npm install
 npm run demo:helloworld
 
 
-> ts-node ./src/demo/helloworld.ts
+> ts-node ./demo/helloworld.ts
 
 [logger] <request> Hello.greet; [input]: "World"; [timestamp]: 1540720637480
 [greet]    ==> I am saying hello to World
@@ -188,7 +188,7 @@ npm run demo:helloworld
 - @QoS decorator: declare a method to be proxify and provide `before` and `after` advises  
 
 > 
-> Notable, to keep the helloword sample as simple as possible, I don't introduce some other decorators in that sample. If you want to try @Completion and callback invocation, you can refer to [stock](https://github.com/leezhenghui/tsnode-proxify/tree/master/src/demo/stock.ts) sample. For more advanced usages, please refer to integration unit test cases.
+> Notable, to keep the helloword sample as simple as possible, I don't introduce some other decorators in that sample. If you want to try @Completion and callback invocation, you can refer to [stock](https://github.com/leezhenghui/tsnode-proxify/tree/master/demo/stock.ts) sample. For more advanced usages, please refer to integration unit test cases.
 
 ### Run Unit Tests
 
