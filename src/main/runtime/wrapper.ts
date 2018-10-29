@@ -29,8 +29,7 @@ import { InvocationContext, EndpointInvoker, Fault }                  from './in
 
 const debug:Debug.IDebugger = Debug('proxify:runtime:wrapper');
 
-const CALLBACK_ENDPOINT_INVOKER_PROP = '__callback_endpoint_invoker__';
-const CALLBACK_INVOCATION_CONTEXT_PROP = '__callback_invocation_context__';
+const CALLBACK_STACK_CONTEXT_PUSH = '__callback_stack_context_push__';
 
 /**
  * Callback method wrapper trap handler
@@ -43,10 +42,26 @@ class CallbackMethodWrapperTrapHandler {
 	private invoker: EndpointInvoker;
 	private iCtx: InvocationContext;
 
+	private ctxStack: Array<{
+		metadata ?: CallbackMetadata,
+		invoker : EndpointInvoker,
+		iCtx: InvocationContext
+	}> = new Array();
+
 	constructor(metadata: CallbackMetadata, endpointInvoker: EndpointInvoker, context: InvocationContext) {
+
+		// current metadata
 		this.metadata = metadata;
+		// current invoker 
 		this.invoker = endpointInvoker;
+		// current invocation context 
 		this.iCtx = context;
+
+		this.ctxStack.push({
+	    metadata: metadata,
+      invoker: endpointInvoker,
+			iCtx: context
+		});
 	}
 
 	public get(target: any, name: string): any {
@@ -61,17 +76,46 @@ class CallbackMethodWrapperTrapHandler {
 	}
 
 	public set(target: any, name: string, value: any): any{
-		if (CALLBACK_INVOCATION_CONTEXT_PROP === name) {
-			this.iCtx = value;
-			return;
+		try {
+			if (CALLBACK_STACK_CONTEXT_PUSH === name) {
+				this.metadata = value.metadata;
+				this.invoker = value.invoker;
+				this.iCtx = value.iCtx;
+
+				this.ctxStack.push(value);
+				return true;
+			}
+
+			target[name] = value;
+		} catch(err) {
+			console.error('Failed to perform "set" operation for value: ', value);
+		}
+	}
+
+	private popStackContext(): {
+			metadata ?: CallbackMetadata,
+			invoker : EndpointInvoker,
+			iCtx: InvocationContext
+	}{
+		const self: CallbackMethodWrapperTrapHandler = this;
+
+    let sc: {
+			metadata ?: CallbackMetadata,
+			invoker : EndpointInvoker,
+			iCtx: InvocationContext
+		} = self.ctxStack.pop();
+
+		if (sc) {
+			self.metadata = sc.metadata;
+			self.invoker = sc.invoker;
+			self.iCtx = sc.iCtx;
+		} else {
+			self.metadata = null;
+			self.invoker = null;
+			self.iCtx = null;
 		}
 
-		if (CALLBACK_ENDPOINT_INVOKER_PROP === name) {
-			this.invoker = value;
-			return;
-		}
-
-		target[name] = value;
+		return sc;
 	}
 	
 	apply(operation: Function, context: any, args: any[]): any {
@@ -80,32 +124,35 @@ class CallbackMethodWrapperTrapHandler {
 
 		try {
 			debug(method + ' [Enter]', operation.name, args, this.metadata);
-			let fault: Fault = null;
-			if (self.metadata) {
-				let i: number = 0;
-				for (i =0; i < args.length; i++) {
-					if (self.metadata.isFaultParam(i) && args[i] !== null && args[i] !== undefined) {
-						fault = new Fault(null, null, null, args[i]);
-						fault.isBizFault = true;
-						break;
-					}	
-				}
-			} 
+			while (self.popStackContext()) {
+				let fault: Fault = null;
 
-			if (self.invoker && self.iCtx) {
-				if (fault) {
-					// console.log('==>[invokeFaultAsync Flow]: ', operation, args, this.metadata);
-					debug(method + ' [InvokeFaultAsyncFlow]', operation, args, this.metadata);
-					self.iCtx.fault = fault;
-					self.invoker.invokeFaultAsync(self.iCtx);
+				if (self.metadata) {
+					let i: number = 0;
+					for (i =0; i < args.length; i++) {
+						if (self.metadata.isFaultParam(i) && args[i] !== null && args[i] !== undefined) {
+							fault = new Fault(null, null, null, args[i]);
+							fault.isBizFault = true;
+							break;
+						}	
+					}
+				} 
+
+				if (self.invoker && self.iCtx) {
+					if (fault) {
+						// console.log('==>[invokeFaultAsync Flow]: ', operation, args, this.metadata);
+						debug(method + ' [InvokeFaultAsyncFlow]', operation, args, this.metadata);
+						self.iCtx.fault = fault;
+						self.invoker.invokeFaultAsync(self.iCtx);
+					} else {
+						// console.log('==>[invokeResultAsync Flow]: ', operation, args, this.metadata);
+						debug(method + ' [InvokeResultAsyncFlow]', operation, args, this.metadata);
+						self.invoker.invokeResultAsync(self.iCtx);	
+					}
+					self.iCtx.__interaction__.__isCallbackStyle__ = true;
 				} else {
-					// console.log('==>[invokeResultAsync Flow]: ', operation, args, this.metadata);
-					debug(method + ' [InvokeResultAsyncFlow]', operation, args, this.metadata);
-					self.invoker.invokeResultAsync(self.iCtx);	
+					debug(method + ' skip proxify handling');
 				}
-				self.iCtx.__interaction__.__isCallbackStyle__ = true;
-			} else {
-				debug(method + ' skip proxify handling');
 			}
 
 			let reval = Reflect.apply(operation, context, args);
@@ -227,8 +274,15 @@ class MethodWrapperTrapHandler {
 					let proxiedCB = origCB; 
 					if (origCB[isCallbackWrappedProp]) {
 						debug(method + ' nested wrapper', args[cbParamPos]);
+						let currentMetadta = origCB[CALLBACK_METADATA_SLOT];
+						origCB[CALLBACK_STACK_CONTEXT_PUSH] = {
+					    metadata: currentMetadta,
+							invoker: invoker,
+							iCtx: iCtx
+						};
+					} else {
+						proxiedCB =  new Proxy(origCB, new CallbackMethodWrapperTrapHandler(origCB[CALLBACK_METADATA_SLOT], invoker, iCtx));
 					}
-					proxiedCB =  new Proxy(origCB, new CallbackMethodWrapperTrapHandler(origCB[CALLBACK_METADATA_SLOT], invoker, iCtx));
 					args[cbParamPos] = proxiedCB;
 				}
 			} 
