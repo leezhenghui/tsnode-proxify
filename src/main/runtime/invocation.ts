@@ -255,7 +255,7 @@ export abstract class Processor {
  * After the invocation chain initailed, it will fire a LOCATE process tomake sure all of interceptors are ready to process the request.
  * In *_result interaction type, it will change report the result/response to caller 
  */
-class HeaderProcessor extends Processor {
+class HeaderInvoker extends Processor {
 	private omd: OperationMetadata;
 	public constructor(omd: OperationMetadata) {
     super();	
@@ -312,7 +312,7 @@ class HeaderProcessor extends Processor {
  *   In REQUEST interaction type, it will call to invoker.
  *   In LOCATE interaction type, it will change the type to LOCATE_RESULT 
  */
-class TailProcessor extends Processor {
+class TailInvoker extends Processor {
 	private targetFn: Function;
 	public constructor(targetFn: Function) {
     super();	
@@ -328,13 +328,13 @@ class TailProcessor extends Processor {
 	}
 
 	private invoke(thisArg: any, args: any[]): any {
-		const self: TailProcessor = this;
+		const self: TailInvoker = this;
 		let reval = Reflect.apply(self.targetFn, thisArg, args); 	
 		return reval;
 	}
 
 	public _process(context: InvocationContext, next: (error: any, status: ProcessStatus) => void): void {
-		let self: TailProcessor = this;
+		let self: TailInvoker = this;
 		let method: string = self.getName() + '._process';
 		// console.log('==>[tail]: processing ' + context.__interaction__.interactionType);
 		debug(method, '[tail]', context.__interaction__.interactionType);
@@ -447,16 +447,16 @@ class TailProcessor extends Processor {
 export class EndpointInvoker {
 	private omd: OperationMetadata;
 	private targetFn: Function;
-	private header: HeaderProcessor;
-	private tail: TailProcessor;
+	private header: HeaderInvoker;
+	private tail: TailInvoker;
 	private isInited: boolean = false;
 
 	public constructor(omd: OperationMetadata, targetFn: Function) {
 		this.omd = omd;
 		this.targetFn = targetFn;
 
-		this.header = new HeaderProcessor(omd);
-		this.tail = new TailProcessor(targetFn);
+		this.header = new HeaderInvoker(omd);
+		this.tail = new TailInvoker(targetFn);
 
 		this.header._setNext(this.tail);
 		this.tail._setPrevious(this.header);

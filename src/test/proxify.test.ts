@@ -876,7 +876,7 @@ describe('Integration Tests', function() {
 		});
 	});
 	
-	const MAX_NESTED_STACK_DEPTH = 20;
+	const MAX_NESTED_STACK_DEPTH = 160;
 
 	@Component({
 		"componentName": 'NestedInvocation',
