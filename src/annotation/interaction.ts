@@ -15,17 +15,17 @@
  */
 
 /**
- * @module Provides the method level annotation of QoS via ECMAScript 2016 decorator, 
- * which is aimed to enable an proxified method managed by node-proxify framework 
+ * @module Provides the method level annotation of QoS via ECMAScript 2016 decorator,
+ * which is aimed to enable an proxified method managed by node-proxify framework
  *
  */
 
-import * as Debug                                         from 'debug';
-import { OPERATION_METADATA_SLOT, OperationMetadata }     from '../metadata/operation'; 
-import { InteractionStyleType }                           from '../metadata/common';
-import { CALLBACK_METADATA_SLOT, CallbackMetadata }       from '../metadata/callback'; 
+import * as Debug from 'debug';
+import { OPERATION_METADATA_SLOT, OperationMetadata } from '../metadata/operation';
+import { InteractionStyleType } from '../metadata/common';
+import { CALLBACK_METADATA_SLOT, CallbackMetadata } from '../metadata/callback';
 
-const debug:Debug.IDebugger = Debug('proxify:annotation:interaction');
+const debug: Debug.IDebugger = Debug('proxify:annotation:interaction');
 
 /**
  * @annotation for method level, InteractionStyle
@@ -34,25 +34,25 @@ const debug:Debug.IDebugger = Debug('proxify:annotation:interaction');
  *
  */
 export function InteractionStyle(value: InteractionStyleType) {
-	return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-		const method: string = 'decorator.qos';
+  return function(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    const method: string = 'decorator.qos';
 
-		let operation: Function = target[propertyKey];
-		debug(method + ' [Enter]', operation.name);
+    let operation: Function = target[propertyKey];
+    debug(method + ' [Enter]', operation.name);
 
-		let omd: OperationMetadata = operation[OPERATION_METADATA_SLOT];
-		if (! omd) {
-			omd = new OperationMetadata();
-		}
+    let omd: OperationMetadata = operation[OPERATION_METADATA_SLOT];
+    if (!omd) {
+      omd = new OperationMetadata();
+    }
 
-		omd.interactionStyle = value;
-		operation[OPERATION_METADATA_SLOT] = omd;
-		debug(method + ' [Exit]', operation.name, omd);
-	}
+    omd.interactionStyle = value;
+    operation[OPERATION_METADATA_SLOT] = omd;
+    debug(method + ' [Exit]', operation.name, omd);
+  };
 }
 
 /**
- * @annotation Completion 
+ * @annotation Completion
  *
  * Method parameter annotation, which used to mark the parameter as completion method
  *
@@ -61,23 +61,23 @@ export function InteractionStyle(value: InteractionStyleType) {
  *
  */
 export function Completion(target: any, propertyKey: string, parameterIndex: number) {
-	const method: string = 'decorator.completion';
+  const method: string = 'decorator.completion';
 
-	let operation: Function = target[propertyKey];
-	debug(method + ' [Enter]', operation.name);
+  let operation: Function = target[propertyKey];
+  debug(method + ' [Enter]', operation.name);
 
-	let omd: OperationMetadata = operation[OPERATION_METADATA_SLOT];
-	if (! omd) {
-		omd = new OperationMetadata();
-	}
+  let omd: OperationMetadata = operation[OPERATION_METADATA_SLOT];
+  if (!omd) {
+    omd = new OperationMetadata();
+  }
 
-	omd.__completion_fn_param_position__ = parameterIndex;
-	operation[OPERATION_METADATA_SLOT] = omd;
-	debug(method + ' [Exit]', operation.name, omd);
+  omd.__completion_fn_param_position__ = parameterIndex;
+  operation[OPERATION_METADATA_SLOT] = omd;
+  debug(method + ' [Exit]', operation.name, omd);
 }
 
 /**
- * @annotation Callback 
+ * @annotation Callback
  *
  * Method parameter annotation, which used to mark the parameter as callback method
  *
@@ -87,44 +87,44 @@ export function Completion(target: any, propertyKey: string, parameterIndex: num
  */
 
 export function Callback(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-	const method: string = 'decorator.callback';
+  const method: string = 'decorator.callback';
 
-	let cbFn: Function = target[propertyKey];
-	debug(method + ' [Enter]', cbFn.name);
+  let cbFn: Function = target[propertyKey];
+  debug(method + ' [Enter]', cbFn.name);
 
-	let cmd: CallbackMetadata = cbFn[CALLBACK_METADATA_SLOT];
-	if (! cmd) {
-		cmd = new CallbackMetadata();
-	}
+  let cmd: CallbackMetadata = cbFn[CALLBACK_METADATA_SLOT];
+  if (!cmd) {
+    cmd = new CallbackMetadata();
+  }
 
-	cbFn[CALLBACK_METADATA_SLOT] = cmd;
-	debug(method + ' [Exit]', cbFn.name, cmd);
+  cbFn[CALLBACK_METADATA_SLOT] = cmd;
+  debug(method + ' [Exit]', cbFn.name, cmd);
 }
 
 export function Fault(target: any, propertyKey: string, parameterIndex: number) {
-	const method: string = 'decorator.fault';
+  const method: string = 'decorator.fault';
 
-	let cbFn: Function = target[propertyKey];
-	debug(method + ' [Enter]', cbFn.name);
-	let cmd: CallbackMetadata = cbFn[CALLBACK_METADATA_SLOT];
-	if (! cmd) {
-		cmd = new CallbackMetadata();
-	}
-	cmd.addFaultParam(parameterIndex);	
-	cbFn[CALLBACK_METADATA_SLOT] = cmd;
-	debug(method + ' [Exit]', cbFn.name, cmd);
+  let cbFn: Function = target[propertyKey];
+  debug(method + ' [Enter]', cbFn.name);
+  let cmd: CallbackMetadata = cbFn[CALLBACK_METADATA_SLOT];
+  if (!cmd) {
+    cmd = new CallbackMetadata();
+  }
+  cmd.addFaultParam(parameterIndex);
+  cbFn[CALLBACK_METADATA_SLOT] = cmd;
+  debug(method + ' [Exit]', cbFn.name, cmd);
 }
 
 export function Output(target: any, propertyKey: string, parameterIndex: number) {
-	const method: string = 'decorator.output';
+  const method: string = 'decorator.output';
 
-	let cbFn: Function = target[propertyKey];
-	debug(method + ' [Enter]', cbFn.name);
-	let cmd: CallbackMetadata = cbFn[CALLBACK_METADATA_SLOT];
-	if (! cmd) {
-		cmd = new CallbackMetadata();
-	}
-	cmd.addOutputParam(parameterIndex);	
-	cbFn[CALLBACK_METADATA_SLOT] = cmd;
-	debug(method + ' [Exit]', cbFn.name, cmd);
+  let cbFn: Function = target[propertyKey];
+  debug(method + ' [Enter]', cbFn.name);
+  let cmd: CallbackMetadata = cbFn[CALLBACK_METADATA_SLOT];
+  if (!cmd) {
+    cmd = new CallbackMetadata();
+  }
+  cmd.addOutputParam(parameterIndex);
+  cbFn[CALLBACK_METADATA_SLOT] = cmd;
+  debug(method + ' [Exit]', cbFn.name, cmd);
 }

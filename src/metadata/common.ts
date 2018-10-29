@@ -15,22 +15,22 @@
  */
 
 /**
- * 
+ *
  * @module Provides proxify wrapper relevant common metadata definitions
  *
  */
 
-import * as Debug                from 'debug';
+import * as Debug from 'debug';
 
-const debug:Debug.IDebugger = Debug('proxify:metadata:common');
+const debug: Debug.IDebugger = Debug('proxify:metadata:common');
 
 export enum InteractionStyleType {
-	ASYNC = 0,
-	SYNC = 1
+  ASYNC = 0,
+  SYNC = 1,
 }
 
-export const isComponentManagedProp: string = '__is_component_managed__'; 
+export const isComponentManagedProp: string = '__is_component_managed__';
 
-export const isCallbackWrappedProp: string = '__is_callback_wrapped__'; 
+export const isCallbackWrappedProp: string = '__is_callback_wrapped__';
 
-export const isBindWrappedProp: string = '__is_bind_wrapped__'; 
+export const isBindWrappedProp: string = '__is_bind_wrapped__';

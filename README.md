@@ -88,7 +88,7 @@ Before we dig into the tsnode-proxify, we need to clarify some concepts.
 @Interceptor({
   "interactionStyle": InteractionStyleType.SYNC
 })
-  class NoopInterceptor extends interceptor.Interceptor{
+  class NoopInterceptor extends AbstractInterceptor{
   constructor(config: any) {
   	super(config);	
   }

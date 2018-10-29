@@ -14,21 +14,14 @@
  * limitations under the License.
  */
 
-
 //=====================================================================
 //               Decorator Part
 //=====================================================================
 
-export { Interceptor }          from './annotation/interceptor'; 
-export { Component }            from './annotation/component';
-export { QoS }                  from './annotation/qos';
-export { 
-	       InteractionStyle, 
-	       Completion, 
-	       Callback, 
-	       Fault, 
-	       Output 
-       }                        from './annotation/interaction';
+export { Interceptor } from './annotation/interceptor';
+export { Component } from './annotation/component';
+export { QoS } from './annotation/qos';
+export { InteractionStyle, Completion, Callback, Fault, Output } from './annotation/interaction';
 
 //=====================================================================
 //               Metadata Part
@@ -40,6 +33,5 @@ export { InteractionStyleType } from './metadata/common';
 //               Runtime Part
 //=====================================================================
 
-export { AbstractInterceptor }  from './runtime/interceptor';
-export { InvocationContext }    from './runtime/invocation';
-
+export { AbstractInterceptor } from './runtime/interceptor';
+export { InvocationContext } from './runtime/invocation';
