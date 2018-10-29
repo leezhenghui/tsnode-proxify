@@ -40,38 +40,48 @@ As mentioned above, the AOP framework can bring us so many benefits to improve t
 
 Before we dig into the tsnode-proxify, we need to clarify some concepts. 
 
-1. Interaction style for a method call in node.js:
+1. **Interaction style** for a method call in node.js
 
-- Sync: The method `completion` should be done in the same tick as method invocation being requested. 
+    - Sync: The method `completion` should be the same time point as method invocation being returned. 
 
-  e.g: 
-  greet(name: string): string {
-    return 'Hello, ' + name;
-  }
-		
+     ```
+     e.g: 
+     greet(name: string): string {
+       return 'Hello, ' + name;
+     }
+     ```
+    
+    - Async: The method `completion` will be done in a future certain time point after the moment of method invocation being returned. 
 
-- Async: The method `completion` will be done in a future certain tick after the tick of method invocation being requested. 
+     ```
+     e.g: 
+     greet(name: string, cb: Function): void{
+       setTimeout(function() {
+         let reval = 'Hello, ' + name;
+         cb(null, reval);
+       }, 10); 
+     }
+     ```
 
-  e.g: 
-  greet(name: string, cb: Function): void{
-    setTimeout(function() {
-      let reval = 'Hello, ' + name;
-      cb(null, reval);
-      }, 10); 
-    }
+2. **Completion hints**
 
-2. Completion identifier:
+    - Invocation completion hints(supported so far). This concept is relevant to how we understand `after` of an execution join point
+    
+    - method returned (for sync sytle method only)
+    
+    - callback method get called (for both sync and async style method)
+    
+    - promise get resolved or rejected (for async method with promise as return value) 
 
-- Invocation completion hints(supported so far). This concept is relevant to how we understand `after` of an execution join point
-	- method returned (for sync sytle method only)
-  - callback method get called (for both sync and async style method)
-  - promise get resolved or rejected (for async method with promise as return value) 
+3. So, at the time being, tsnode-proxify can support below combinations with `before` and `after` advise join points
 
-So, we  totaolly can provide below combinations for `before` and `after` advise points:
-  - sync-return
-  - sync-callback
-  - async-callback
-  - async-promise
+    - sync-return
+    
+    - sync-callback
+    
+    - async-callback
+    
+    - async-promise
 
 tsnode-proxify enable the aspect modularity to be implemented as an `Interceptor` class(declared by @Interceptor decorator) for a specific QoS intention, which can be dynamically injected into the join-point if a desired @QoS declaration being claimed on the target method. 
 
