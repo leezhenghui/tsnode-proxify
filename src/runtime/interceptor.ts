@@ -29,7 +29,7 @@ import { InteractionType, Interaction, Fault, InvocationContext, Processor, Proc
 
 const debug:Debug.IDebugger = Debug('proxify:runtime:interceptor');
 
-export abstract class Interceptor extends Processor {
+export abstract class AbstractInterceptor extends Processor {
 	constructor(config: any) {
     super();	
 	}
@@ -53,7 +53,7 @@ export abstract class Interceptor extends Processor {
 	}
 
 	private switchToFaultFlow(error: any, context: InvocationContext, next: (error: any, status: ProcessStatus) => void ): void{
-		const self: Interceptor = this;
+		const self: AbstractInterceptor = this;
 		let fault: Fault;
 		if ( error instanceof Fault ) {
 			fault = error;
@@ -72,7 +72,7 @@ export abstract class Interceptor extends Processor {
 	}
 
 	public _process(context: InvocationContext, next: (error: any, status: ProcessStatus) => void): void {
-		const self: Interceptor = this;
+		const self: AbstractInterceptor = this;
 		let method: string = self.getName() + '._process';
     debug(method + ' [Etner]', context);
 

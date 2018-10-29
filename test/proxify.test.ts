@@ -41,7 +41,7 @@ import { InvocationContext, Processor, ProcessStatus } from '../src/runtime/invo
 	@Interceptor({
 		"interactionStyle": InteractionStyleType.SYNC
 	})
-	class FooInterceptor extends interceptor.Interceptor {
+	class FooInterceptor extends interceptor.AbstractInterceptor {
 		constructor(config: any) {
 			super(config);	
 		}
@@ -58,7 +58,7 @@ import { InvocationContext, Processor, ProcessStatus } from '../src/runtime/invo
 	@Interceptor({
 		"interactionStyle": InteractionStyleType.SYNC
 	})
-	class BarInterceptor extends interceptor.Interceptor{
+	class BarInterceptor extends interceptor.AbstractInterceptor{
 		constructor(config: any) {
 			super(config);	
 		}
@@ -72,7 +72,7 @@ import { InvocationContext, Processor, ProcessStatus } from '../src/runtime/invo
 		}
 	}
 
-	class BarInterceptorWithoutAnnotation extends interceptor.Interceptor{
+	class BarInterceptorWithoutAnnotation extends interceptor.AbstractInterceptor{
 		constructor(config: any) {
 			super(config);	
 		}
@@ -93,7 +93,7 @@ import { InvocationContext, Processor, ProcessStatus } from '../src/runtime/invo
 	@Interceptor({
 		"interactionStyle": InteractionStyleType.SYNC
 	})
-	class FakeInterceptor extends interceptor.Interceptor{
+	class FakeInterceptor extends interceptor.AbstractInterceptor{
 		constructor(config: any) {
 			super(config);	
 		}
@@ -109,7 +109,7 @@ import { InvocationContext, Processor, ProcessStatus } from '../src/runtime/invo
 	@Interceptor({
 		"interactionStyle": InteractionStyleType.SYNC
 	})
-	class LoggingInterceptor extends interceptor.Interceptor{
+	class LoggingInterceptor extends interceptor.AbstractInterceptor{
 		private debug:Debug.IDebugger = Debug('proxify:LoggingInterceptor');
 		private LOG_PREFIX: string = '[LoggingInterceptor] ';
 		constructor(config: any) {
@@ -287,7 +287,7 @@ import { InvocationContext, Processor, ProcessStatus } from '../src/runtime/invo
 	@Interceptor({
 		"interactionStyle": InteractionStyleType.SYNC
 	})
-	class Logger extends interceptor.Interceptor{
+	class Logger extends interceptor.AbstractInterceptor{
 		private LOG_PREFIX: string = '[Logger] ';
 		private debug:Debug.IDebugger = Debug('proxify:Logger');
 
@@ -371,7 +371,7 @@ import { InvocationContext, Processor, ProcessStatus } from '../src/runtime/invo
 	@Interceptor({
 		"interactionStyle": InteractionStyleType.ASYNC
 	})
-	class AsyncLogger extends interceptor.Interceptor{
+	class AsyncLogger extends interceptor.AbstractInterceptor{
 		private LOG_PREFIX: string = '[Logger] ';
 		private debug:Debug.IDebugger = Debug('proxify:Logger');
 
@@ -687,8 +687,8 @@ describe('@Component, @QoS, @Completion, @Callback Basic Function Tests', functi
 		let initParams = [];
 
 		expect(iFn.name).to.equal('LoggingInterceptor');
-		let i: interceptor.Interceptor = Reflect.construct(iFn, initParams);
-		expect(i instanceof interceptor.Interceptor).to.equal(true);
+		let i: interceptor.AbstractInterceptor = Reflect.construct(iFn, initParams);
+		expect(i instanceof interceptor.AbstractInterceptor).to.equal(true);
 		expect(i instanceof Processor).to.equal(true);
 		expect(i.getName()).to.equal('LoggingInterceptor');
 	});

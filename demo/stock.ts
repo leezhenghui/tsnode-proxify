@@ -14,18 +14,24 @@
  * limitations under the License.
  */
 
-import { Interceptor }                                 from '../src/annotation/interceptor'; 
-import { Component }                                   from '../src/annotation/component';
-import { QoS }                                         from '../src/annotation/qos';
-import { InteractionStyle, Completion, Callback, Fault, Output } from '../src/annotation/interaction';
-import { InteractionStyleType }                        from '../src/metadata/common';
-import * as interceptor                                from '../src/runtime/interceptor';
-import { InvocationContext }                           from '../src/runtime/invocation';
+import { 
+	Interceptor, 
+	Component, 
+	QoS,
+  InteractionStyle,
+  Completion, 
+  Callback,
+  Fault,
+  Output,
+	InteractionStyleType,
+	AbstractInterceptor,
+	InvocationContext
+}                      from '../dist/index'; 
 
 @Interceptor({
 	"interactionStyle": InteractionStyleType.SYNC
 })
-class LoggingInterceptor extends interceptor.Interceptor{
+class LoggingInterceptor extends AbstractInterceptor{
 	private LOG_PREFIX: string = '[LoggingInterceptor] ';
 
 	constructor(config: any) {

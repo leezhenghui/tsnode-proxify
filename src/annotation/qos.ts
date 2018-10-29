@@ -22,7 +22,7 @@
 
 import * as Debug                                     from 'debug';
 import { OPERATION_METADATA_SLOT, OperationMetadata } from '../metadata/operation'; 
-import { Interceptor }                                from '../runtime/interceptor';
+import { AbstractInterceptor }                        from '../runtime/interceptor';
 
 const debug:Debug.IDebugger = Debug('proxify:annotation:qos');
 
@@ -34,7 +34,7 @@ const debug:Debug.IDebugger = Debug('proxify:annotation:qos');
 export function QoS(config ?: {
   interceptorType ?: Function,
 	initParams ?: any,
-	singleton ?: Interceptor
+	singleton ?: AbstractInterceptor
 }) {
 
 	return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
