@@ -21,6 +21,7 @@
  */
 
 import * as Debug from 'debug';
+import { AnyFn } from '../util/types';
 
 const debug: Debug.IDebugger = Debug('proxify:metadata:component');
 
@@ -31,6 +32,6 @@ export const COMPONENT_METADATA_SLOT: string = '__component_metadata_slot__';
  */
 export class ComponentMetadata {
   public __className__: string;
-  public __target_class__: Function;
+  public __target_class__: AnyFn;
   public componentName: string;
 }

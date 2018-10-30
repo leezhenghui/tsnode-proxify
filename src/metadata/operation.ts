@@ -23,17 +23,18 @@
 import * as Debug from 'debug';
 import { InteractionStyleType } from './common';
 import { AbstractInterceptor } from '../runtime/interceptor';
+import { AnyFn } from '../util/types';
 
 const debug: Debug.IDebugger = Debug('proxify:metadata:qos');
 
 export const OPERATION_METADATA_SLOT: string = '__operation_metadata_slot__';
 
 export class InterceptorFactory {
-  private clz: Function;
+  private clz: AnyFn;
   private args: any[];
   private instance: AbstractInterceptor;
 
-  constructor(clz: Function, args: any, singleton: AbstractInterceptor) {
+  constructor(clz: AnyFn, args: any, singleton: AbstractInterceptor) {
     this.clz = clz;
     this.args = args || [];
 
@@ -62,17 +63,18 @@ export class InterceptorFactory {
  * Metadata provided by proxify method decorator 
  */
 export class OperationMetadata {
-  public __className__: string;
-  public __target_class__: Function;
 
+  public __className__: string;
+  public __target_class__: AnyFn;
   public __operationName__: string;
-  public __target_fn__: Function;
+  public __target_fn__: AnyFn;
   public interactionStyle: InteractionStyleType;
-  private __factories__: InterceptorFactory[] = new Array();
   public __completion_fn_param_position__: number;
 
-  public addQoS(interceptorType: Function, params: any, singleton: AbstractInterceptor) {
-    let factory: InterceptorFactory = new InterceptorFactory(interceptorType, params, singleton);
+  private __factories__: InterceptorFactory[] = new Array();
+
+  public addQoS(interceptorType: AnyFn, params: any, singleton: AbstractInterceptor) {
+    const factory: InterceptorFactory = new InterceptorFactory(interceptorType, params, singleton);
     this.__factories__.push(factory);
   }
 

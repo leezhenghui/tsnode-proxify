@@ -55,7 +55,7 @@ export function Component(config?: { componentName?: string }): AnyFn {
     md.componentName = config && config.componentName ? config.componentName : clz.name;
     clz[COMPONENT_METADATA_SLOT] = md;
 
-    let clzWrapper: AnyFn  = Wrapper.wrap(clz, null);
+    const clzWrapper: AnyFn  = Wrapper.wrap(clz, null);
     debug(method + '[Exit]', clz.name);
     return clzWrapper;
   };

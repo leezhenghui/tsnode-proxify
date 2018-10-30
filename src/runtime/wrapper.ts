@@ -44,10 +44,10 @@ const CALLBACK_STACK_CONTEXT_PUSH = '__callback_stack_context_push__';
  *
  */
 class CallbackMethodWrapperTrapHandler {
+
   private metadata: CallbackMetadata;
   private invoker: EndpointInvoker;
   private iCtx: InvocationContext;
-
   private ctxStack: Array<{
     metadata?: CallbackMetadata;
     invoker: EndpointInvoker;
@@ -70,7 +70,7 @@ class CallbackMethodWrapperTrapHandler {
   }
 
   public get(target: any, name: string): any {
-    let method: string = 'CallbackMethodWrapperTrapHandler.get';
+    const method: string = 'CallbackMethodWrapperTrapHandler.get';
     debug(method + ' [Enter]', target, name);
     if (isCallbackWrappedProp === name) {
       debug(method + ' [Exit]', true);
@@ -103,37 +103,11 @@ class CallbackMethodWrapperTrapHandler {
 
       target[name] = value;
     } catch (err) {
-      console.error('Failed to perform "set" operation for value: ', value);
+      debug('Failed to perform "set" operation for value: ', value);
     }
   }
 
-  private popStackContext(): {
-    metadata?: CallbackMetadata;
-    invoker: EndpointInvoker;
-    iCtx: InvocationContext;
-  } {
-    const self: CallbackMethodWrapperTrapHandler = this;
-
-    let sc: {
-      metadata?: CallbackMetadata;
-      invoker: EndpointInvoker;
-      iCtx: InvocationContext;
-    } = self.ctxStack.pop();
-
-    if (sc) {
-      self.metadata = sc.metadata;
-      self.invoker = sc.invoker;
-      self.iCtx = sc.iCtx;
-    } else {
-      self.metadata = null;
-      self.invoker = null;
-      self.iCtx = null;
-    }
-
-    return sc;
-  }
-
-  apply(operation: Function, context: any, args: any[]): any {
+  public apply(operation: AnyFn, context: any, args: any[]): any {
     const self: CallbackMethodWrapperTrapHandler = this;
     let method: string = 'CallbackMethodWrapperTrapHandler.apply';
 
@@ -180,16 +154,42 @@ class CallbackMethodWrapperTrapHandler {
       throw err;
     }
   }
+  
+	private popStackContext(): {
+    metadata?: CallbackMetadata;
+    invoker: EndpointInvoker;
+    iCtx: InvocationContext;
+  } {
+    const self: CallbackMethodWrapperTrapHandler = this;
+
+    const sc: {
+      metadata?: CallbackMetadata;
+      invoker: EndpointInvoker;
+      iCtx: InvocationContext;
+    } = self.ctxStack.pop();
+
+    if (sc) {
+      self.metadata = sc.metadata;
+      self.invoker = sc.invoker;
+      self.iCtx = sc.iCtx;
+    } else {
+      self.metadata = null;
+      self.invoker = null;
+      self.iCtx = null;
+    }
+
+    return sc;
+  }
 }
 
 class BindWrapperTrapHandler {
-  constructor(metadata: OperationMetadata, origFn: Function) {
+  constructor(metadata: OperationMetadata, origFn: AnyFn) {
     this.metadata = metadata;
     this.origFn = origFn;
   }
 
   private metadata: OperationMetadata;
-  private origFn: Function;
+  private origFn: AnyFn;
 
   public get(target: any, name: string): any {
     const method: string = 'BindWrapperTrapHandler.get';
@@ -204,7 +204,7 @@ class BindWrapperTrapHandler {
     return target[name];
   }
 
-  apply(operation: Function, context: any, args: any[]): any {
+  public apply(operation: AnyFn, context: any, args: any[]): any {
     const method: string = 'BindWrapperTrapHandler.apply';
     const self: BindWrapperTrapHandler = this;
 
@@ -213,12 +213,12 @@ class BindWrapperTrapHandler {
     // use self.origFn as context, do not use the passed in param "context"
     // as that will create a new proxy instance, which will make a duplicated wrapper
     // for the bindedFn
-    let bindedFn = Reflect.apply(operation, self.origFn, args);
+    const bindedFn = Reflect.apply(operation, self.origFn, args);
     if (bindedFn[isComponentManagedProp]) {
       return bindedFn;
     }
 
-    let wrappedMethod: Function = new Proxy(bindedFn, new MethodWrapperTrapHandler(self.metadata, null, bindedFn));
+    const wrappedMethod: AnyFn = new Proxy(bindedFn, new MethodWrapperTrapHandler(self.metadata, null, bindedFn));
 
     debug(method + ' [Enter]', operation.name, args, this.metadata);
     return wrappedMethod;
@@ -231,14 +231,16 @@ const BIND_METHOD: string = 'bind';
  * Method Proxy wrapper trap handler
  */
 class MethodWrapperTrapHandler {
-  constructor(metadata: OperationMetadata, targetObject: any, origFn: Function) {
+
+  private metadata: OperationMetadata;
+  private targetObject: any;
+  private origFn: AnyFn;
+
+  constructor(metadata: OperationMetadata, targetObject: any, origFn: AnyFn) {
     this.metadata = metadata;
     this.targetObject = targetObject;
     this.origFn = origFn;
   }
-  private metadata: OperationMetadata;
-  private targetObject: any;
-  private origFn: Function;
 
   public get(target: any, name: string): any {
     const method: string = 'MethodWrapperTrapHandler.get';
@@ -258,35 +260,35 @@ class MethodWrapperTrapHandler {
       if (target[name][isBindWrappedProp]) {
         return target[name];
       }
-      let bindWrappedFn: Function = new Proxy(target[name], new BindWrapperTrapHandler(self.metadata, self.origFn));
+      const bindWrappedFn: AnyFn = new Proxy(target[name], new BindWrapperTrapHandler(self.metadata, self.origFn));
       target[name] = bindWrappedFn;
     }
     debug(method + ' [Exit]', target[name]);
     return target[name];
   }
 
-  apply(operation: Function, context: any, args: any[]): any {
-    let method: string = 'MethodWrapperTrapHandler.apply';
+  public apply(operation: AnyFn, context: any, args: any[]): any {
+    const method: string = 'MethodWrapperTrapHandler.apply';
     debug(method + ' [Enter]', operation.name, args, this.metadata);
 
     try {
-      let invoker: EndpointInvoker = new EndpointInvoker(this.metadata, operation);
-      let iCtx: InvocationContext = new InvocationContext();
+      const invoker: EndpointInvoker = new EndpointInvoker(this.metadata, operation);
+      const iCtx: InvocationContext = new InvocationContext();
       iCtx.input = args;
       iCtx.targetObj = this.targetObject;
 
       // wrapper callback method, if the callback parameter is represented
       // in args list
-      let cbParamPos = this.metadata.__completion_fn_param_position__;
+      const cbParamPos = this.metadata.__completion_fn_param_position__;
       if (cbParamPos !== undefined && cbParamPos !== null) {
         if (args[cbParamPos] && 'function' === typeof args[cbParamPos]) {
           debug(method + ' wrapper callback method', args[cbParamPos]);
-          let origCB = args[cbParamPos];
+          const origCB = args[cbParamPos];
 
           let proxiedCB = origCB;
           if (origCB[isCallbackWrappedProp]) {
             debug(method + ' nested wrapper', args[cbParamPos]);
-            let currentMetadta = origCB[CALLBACK_METADATA_SLOT];
+            const currentMetadta = origCB[CALLBACK_METADATA_SLOT];
             origCB[CALLBACK_STACK_CONTEXT_PUSH] = {
               metadata: currentMetadta,
               invoker: invoker,
@@ -303,11 +305,11 @@ class MethodWrapperTrapHandler {
       }
 
       // let reval = Reflect.apply(operation, this.targetObject, args);
-      let reval = invoker.invoke(iCtx);
+      const reval = invoker.invoke(iCtx);
       debug(method + ' [Exit]', reval);
       return reval;
     } catch (err) {
-      console.error('Error: ' + method, err);
+      debug('Error: ' + method, err);
       throw err;
     }
   }
@@ -318,12 +320,8 @@ class MethodWrapperTrapHandler {
  *
  */
 class ObjectWrapperTrapHandler {
-  constructor(metadata: ComponentMetadata) {
-    this.metadata = metadata;
-  }
 
   protected metadata: ComponentMetadata;
-
   protected reservedJSFunctions: Set<string> = new Set([
     'constructor',
     '__defineGetter__',
@@ -344,8 +342,13 @@ class ObjectWrapperTrapHandler {
     'Symbol(Symbol.hasInstance)',
   ]);
 
+  constructor(metadata: ComponentMetadata) {
+    this.metadata = metadata;
+  }
+
+
   public set(target: any, name: string, value: any): boolean {
-    let method: string = 'ObjectWrapperTrapHandler.set';
+    const method: string = 'ObjectWrapperTrapHandler.set';
     debug(method + ' [Enter]', name.toString(), value);
     target[name] = value;
     debug(method + ' [Exit]', name.toString());
@@ -353,15 +356,15 @@ class ObjectWrapperTrapHandler {
   }
 
   public getPrototypeOf(target: any): any {
-    let method: string = 'ObjectWrapperTrapHandler.getPrototypeOf';
+    const method: string = 'ObjectWrapperTrapHandler.getPrototypeOf';
     debug(method + ' [Enter]', target);
-    let proto: any = Reflect.getPrototypeOf(target);
+    const proto: any = Reflect.getPrototypeOf(target);
     debug(method + ' [Exit]', proto);
     return proto;
   }
 
   public get(target: any, name: string): any {
-    let method: string = 'ObjectWrapperTrapHandler.get';
+    const method: string = 'ObjectWrapperTrapHandler.get';
     debug(method + ' [Enter]', name, target);
 
     if (isComponentManagedProp === name.toString()) {
@@ -387,7 +390,7 @@ class ObjectWrapperTrapHandler {
       return target[name];
     }
 
-    let omd: OperationMetadata = target[name][OPERATION_METADATA_SLOT];
+    const omd: OperationMetadata = target[name][OPERATION_METADATA_SLOT];
 
     if (!omd) {
       debug(method + ' [Exit](not a QoS concerned method)', name.toString());
@@ -409,10 +412,10 @@ class ObjectWrapperTrapHandler {
 
     debug(method + ' method level metadata:', omd);
 
-    let wrappedMethod: Function = new Proxy(target[name], new MethodWrapperTrapHandler(omd, target, target[name]));
+    const wrappedMethod: AnyFn= new Proxy(target[name], new MethodWrapperTrapHandler(omd, target, target[name]));
 
-    //note: we need replace the original function
-    //otherwise, <obj>.<fn> !== this.<fn>
+    // note: we need replace the original function
+    // otherwise, <obj>.<fn> !== this.<fn>
     target[name] = wrappedMethod;
 
     debug(method + ' [Exit](wrapped)', name.toString());
@@ -439,18 +442,18 @@ class ClassWrapperTrapHandler extends ObjectWrapperTrapHandler {
    *
    */
   public get(target: any, name: string): any {
-    let method: string = 'ClassWrapperTrapHandler.get';
+    const method: string = 'ClassWrapperTrapHandler.get';
     debug(method + ' [Enter]', target, name);
-    let reval: any = super.get(target, name);
+    const reval: any = super.get(target, name);
     debug(method + ' [Exit]');
     return reval;
   }
 
   public construct(target: any, args: any[]): any {
-    let method: string = 'ClassWrapperTrapHandler.construct';
+    const method: string = 'ClassWrapperTrapHandler.construct';
     debug(method + ' [Enter]', target, args);
-    let targetInst: any = Reflect.construct(target, args);
-    let wrappedInst: any = new Proxy(targetInst, new ObjectWrapperTrapHandler(this.metadata));
+    const targetInst: any = Reflect.construct(target, args);
+    const wrappedInst: any = new Proxy(targetInst, new ObjectWrapperTrapHandler(this.metadata));
     debug(method + ' [Exit]', wrappedInst);
     return wrappedInst;
   }
@@ -460,8 +463,8 @@ class ClassWrapperTrapHandler extends ObjectWrapperTrapHandler {
  * Export class for Wrapper
  */
 export class Wrapper {
-  static wrap(clz: AnyFn, options: any): AnyFn {
-    let method: string = 'Wrapper.wrap';
+  public static wrap(clz: AnyFn, options: any): AnyFn {
+    const method: string = 'Wrapper.wrap';
     debug(method + ' [Enter]', clz, options);
 
     if (clz[isComponentManagedProp]) {
@@ -474,8 +477,8 @@ export class Wrapper {
       debug(method + ' Read metadata from class level proxify metadata hodler:', clz[COMPONENT_METADATA_SLOT]);
       metadata = clz[COMPONENT_METADATA_SLOT];
     }
-    let clzWrapperTrapHandler: ClassWrapperTrapHandler = new ClassWrapperTrapHandler(metadata);
-    let wrappedClz: any = new Proxy(clz, clzWrapperTrapHandler);
+    const clzWrapperTrapHandler: ClassWrapperTrapHandler = new ClassWrapperTrapHandler(metadata);
+    const wrappedClz: any = new Proxy(clz, clzWrapperTrapHandler);
     debug(method + ' [Exit]');
     return wrappedClz;
   }

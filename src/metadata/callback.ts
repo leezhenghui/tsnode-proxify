@@ -21,13 +21,14 @@
  */
 
 import * as Debug from 'debug';
+import { AnyFn } from '../util/types';
 
 const debug: Debug.IDebugger = Debug('proxify:metadata:callback');
 
 export const CALLBACK_METADATA_SLOT: string = '__callback_metadata_slot__';
 
 export class CallbackMetadata {
-  public __target_fn__: Function;
+  public __target_fn__: AnyFn;
   public __operationName__: string;
 
   private __fault_param_positions__: Set<number> = new Set<number>();

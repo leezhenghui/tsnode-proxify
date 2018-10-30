@@ -23,6 +23,7 @@
 import * as Debug from 'debug';
 import { OPERATION_METADATA_SLOT, OperationMetadata } from '../metadata/operation';
 import { AbstractInterceptor } from '../runtime/interceptor';
+import { AnyFn } from '../util/types';
 
 const debug: Debug.IDebugger = Debug('proxify:decorator:qos');
 
@@ -30,12 +31,15 @@ const debug: Debug.IDebugger = Debug('proxify:decorator:qos');
  * @QoS, method level decorator
  * Mark the method as node-proxify managed with the metadata for the interceptors.
  *
+ * Note: Seems tsc can not work properly on the class type, means it can not match a class
+ * to AnyFn, so we need to use "any" here, even this is not suggested by tsline
+ *
  */
-export function QoS(config?: { interceptorType?: Function; initParams?: any; singleton?: AbstractInterceptor }) {
+export function QoS(config?: { interceptorType?: any; initParams?: any; singleton?: AbstractInterceptor }) {
   return function(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const method: string = 'decorator.qos';
 
-    let operation: Function = target[propertyKey];
+    const operation: AnyFn = target[propertyKey];
     debug(method + ' [Enter]', operation.name);
 
     let omd: OperationMetadata = operation[OPERATION_METADATA_SLOT];
@@ -46,6 +50,9 @@ export function QoS(config?: { interceptorType?: Function; initParams?: any; sin
     omd.__target_fn__ = omd.__target_fn__ || operation;
     omd.__operationName__ = omd.__operationName__ || propertyKey;
     if (config) {
+			if (config.interceptorType &&  ! (typeof config.interceptorType === 'function')) {
+		     throw Error('Invalid interceptorType: '+ config.interceptorType);	
+			}
       omd.addQoS(config.interceptorType, config.initParams, config.singleton);
     }
     operation[OPERATION_METADATA_SLOT] = omd;

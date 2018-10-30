@@ -22,12 +22,13 @@
 
 import * as Debug from 'debug';
 import { InteractionStyleType } from './common';
+import { AnyFn } from '../util/types';
 
 export const INTERCEPTOR_METADATA_SLOT: string = '__interceptor_metadata_slot__';
 
 const debug: Debug.IDebugger = Debug('proxify:metadata:interceptor');
 
 export class InterceptorMetadata {
-  public __class__: Function;
+  public __class__: AnyFn;
   public interactionStyle: InteractionStyleType;
 }

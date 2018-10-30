@@ -24,6 +24,7 @@ import * as Debug from 'debug';
 import * as Q from 'q';
 import { InteractionStyleType } from '../metadata/common';
 import { OperationMetadata, InterceptorFactory } from '../metadata/operation';
+import { AnyFn } from '../util/types';
 
 const debug: Debug.IDebugger = Debug('proxify:runtime:invocation');
 
@@ -57,18 +58,18 @@ export class Interaction {
  * Base Fault class
  */
 export class Fault {
+  public errorCode: string;
+  public reason: string;
+  public details: any;
+  public thrownBy: string;
+  public isBizFault: boolean = false;
+
   constructor(thrownBy: string, errorCode: string, reason: string, details: any) {
     this.thrownBy = thrownBy;
     this.errorCode = errorCode;
     this.reason = reason;
     this.details = details;
   }
-
-  public errorCode: string;
-  public reason: string;
-  public details: any;
-  public thrownBy: string;
-  public isBizFault: boolean = false;
 }
 
 export class InvocationContext {
@@ -161,6 +162,11 @@ export class ProcessStatus {
 }
 
 export abstract class Processor {
+
+  private __next: Processor;
+  private __previous: Processor;
+  private __frozen: boolean;
+
   constructor() {
     this.__frozen = false;
     this.__next = null;
@@ -170,9 +176,6 @@ export abstract class Processor {
   public abstract canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void;
   public abstract getName(): string;
 
-  private __next: Processor;
-  private __previous: Processor;
-  private __frozen: boolean;
 
   /**
    * Not like protected modifier in java, typescript does not have the accessiable control for
@@ -271,8 +274,8 @@ class HeaderInvoker extends Processor {
   }
 
   public _process(context: InvocationContext, next: (error: any, status: ProcessStatus) => void): void {
-    let self: Processor = this;
-    let method: string = self.getName() + '._process';
+    const self: Processor = this;
+    const method: string = self.getName() + '._process';
 
     if (!context.__interaction__) {
       context.__interaction__ = new Interaction();
@@ -322,8 +325,10 @@ class HeaderInvoker extends Processor {
  *   In LOCATE interaction type, it will change the type to LOCATE_RESULT
  */
 class TailInvoker extends Processor {
-  private targetFn: Function;
-  public constructor(targetFn: Function) {
+
+  private targetFn: AnyFn;
+
+  public constructor(targetFn: AnyFn) {
     super();
     this.targetFn = targetFn;
   }
@@ -336,22 +341,16 @@ class TailInvoker extends Processor {
     return 'system:internal:tail';
   }
 
-  private invoke(thisArg: any, args: any[]): any {
-    const self: TailInvoker = this;
-    let reval = Reflect.apply(self.targetFn, thisArg, args);
-    return reval;
-  }
-
   public _process(context: InvocationContext, next: (error: any, status: ProcessStatus) => void): void {
-    let self: TailInvoker = this;
-    let method: string = self.getName() + '._process';
+    const self: TailInvoker = this;
+    const method: string = self.getName() + '._process';
     // console.log('==>[tail]: processing ' + context.__interaction__.interactionType);
     debug(method, '[tail]', context.__interaction__.interactionType);
 
     self.canProcess(
       context,
       function(error: any, canProcess: boolean) {
-        let interactionType: InteractionType = context.__interaction__.interactionType;
+        const interactionType: InteractionType = context.__interaction__.interactionType;
         switch (interactionType) {
           case InteractionType.INTERACTION_LOCATE:
             context.__interaction__.interactionType = InteractionType.INTERACTION_LOCATE_RESULT;
@@ -367,7 +366,7 @@ class TailInvoker extends Processor {
           case InteractionType.INTERACTION_INVOKE:
             try {
               context.__interaction__.__hold_on_nexter__ = next;
-              let reval = self.invoke(context.targetObj, context.input);
+              const reval = self.invoke(context.targetObj, context.input);
               context.output = reval;
 
               // sync callback mode
@@ -392,7 +391,7 @@ class TailInvoker extends Processor {
                     function(result: any) {
                       context.__interaction__.interactionType = InteractionType.INTERACTION_INVOKE_RESULT;
                       realResult = result;
-                      let deferred: Q.Deferred<any> = Q.defer<any>();
+                      const deferred: Q.Deferred<any> = Q.defer<any>();
                       self._process(
                         context,
                         function(error: any, status: ProcessStatus) {
@@ -405,7 +404,7 @@ class TailInvoker extends Processor {
                     function(error: any) {
                       realError = error;
                       context.__interaction__.interactionType = InteractionType.INTERACTION_INVOKE_FAULT;
-                      let deferred: Q.Deferred<any> = Q.defer<any>();
+                      const deferred: Q.Deferred<any> = Q.defer<any>();
                       self._process(
                         context,
                         function(error: any, status: ProcessStatus) {
@@ -446,8 +445,8 @@ class TailInvoker extends Processor {
               );
               return;
             } catch (error) {
-              //TODO, fault handling
-              let fault: Fault = new Fault(self.getName(), null, null, null);
+              // TODO, fault handling
+              const fault: Fault = new Fault(self.getName(), null, null, null);
               fault.errorCode = error.errorCode;
               fault.reason = error.message || error.reason;
               fault.details = error;
@@ -466,6 +465,12 @@ class TailInvoker extends Processor {
       }.bind(self),
     );
   }
+
+  private invoke(thisArg: any, args: any[]): any {
+    const self: TailInvoker = this;
+    const reval = Reflect.apply(self.targetFn, thisArg, args);
+    return reval;
+  }
 }
 
 /**
@@ -479,12 +484,12 @@ class TailInvoker extends Processor {
  */
 export class EndpointInvoker {
   private omd: OperationMetadata;
-  private targetFn: Function;
+  private targetFn: AnyFn;
   private header: HeaderInvoker;
   private tail: TailInvoker;
   private isInited: boolean = false;
 
-  public constructor(omd: OperationMetadata, targetFn: Function) {
+  public constructor(omd: OperationMetadata, targetFn: AnyFn) {
     this.omd = omd;
     this.targetFn = targetFn;
 
@@ -493,24 +498,6 @@ export class EndpointInvoker {
 
     this.header._setNext(this.tail);
     this.tail._setPrevious(this.header);
-  }
-
-  private init(): void {
-    const self: EndpointInvoker = this;
-    let factories: InterceptorFactory[] = this.omd.getInterceptorFactories();
-
-    factories.forEach(function(factory) {
-      let p: Processor = factory.create();
-      //TODO, do validation
-
-      let previous: Processor = self.tail._getPrevious();
-      p._setPrevious(previous);
-      p._setNext(self.tail);
-      previous._setNext(p);
-      self.tail._setPrevious(p);
-    });
-
-    this.isInited = true;
   }
 
   public invoke(context: InvocationContext): any {
@@ -522,7 +509,7 @@ export class EndpointInvoker {
     }
 
     let processStatus: ProcessStatus;
-    let deferred: Q.Deferred<any> = Q.defer<any>();
+    const deferred: Q.Deferred<any> = Q.defer<any>();
 
     self.header._process(
       context,
@@ -629,5 +616,23 @@ export class EndpointInvoker {
         return holdOnNexter(error, status);
       }.bind(self),
     );
+  }
+  
+	private init(): void {
+    const self: EndpointInvoker = this;
+    const factories: InterceptorFactory[] = this.omd.getInterceptorFactories();
+
+    factories.forEach(function(factory) {
+      const p: Processor = factory.create();
+      // TODO, do validation
+
+      const previous: Processor = self.tail._getPrevious();
+      p._setPrevious(previous);
+      p._setNext(self.tail);
+      previous._setNext(p);
+      self.tail._setPrevious(p);
+    });
+
+    this.isInited = true;
   }
 }

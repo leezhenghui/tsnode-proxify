@@ -24,6 +24,7 @@ import * as Debug from 'debug';
 import { OPERATION_METADATA_SLOT, OperationMetadata } from '../metadata/operation';
 import { InteractionStyleType } from '../metadata/common';
 import { CALLBACK_METADATA_SLOT, CallbackMetadata } from '../metadata/callback';
+import { AnyFn } from '../util/types';
 
 const debug: Debug.IDebugger = Debug('proxify:decorator:interaction');
 
@@ -37,7 +38,7 @@ export function InteractionStyle(value: InteractionStyleType) {
   return function(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const method: string = 'decorator.qos';
 
-    let operation: Function = target[propertyKey];
+    const operation: AnyFn = target[propertyKey];
     debug(method + ' [Enter]', operation.name);
 
     let omd: OperationMetadata = operation[OPERATION_METADATA_SLOT];
@@ -57,13 +58,13 @@ export function InteractionStyle(value: InteractionStyleType) {
  * Method parameter decorator, which used to mark the parameter as completion method
  *
  * Usage:
- *  greet(name: string, @Completion cb: Function)
+ *  greet(name: string, @Completion cb: AnyFn)
  *
  */
 export function Completion(target: any, propertyKey: string, parameterIndex: number) {
   const method: string = 'decorator.completion';
 
-  let operation: Function = target[propertyKey];
+  const operation: AnyFn = target[propertyKey];
   debug(method + ' [Enter]', operation.name);
 
   let omd: OperationMetadata = operation[OPERATION_METADATA_SLOT];
@@ -89,7 +90,7 @@ export function Completion(target: any, propertyKey: string, parameterIndex: num
 export function Callback(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
   const method: string = 'decorator.callback';
 
-  let cbFn: Function = target[propertyKey];
+  const cbFn: AnyFn = target[propertyKey];
   debug(method + ' [Enter]', cbFn.name);
 
   let cmd: CallbackMetadata = cbFn[CALLBACK_METADATA_SLOT];
@@ -104,7 +105,7 @@ export function Callback(target: any, propertyKey: string, descriptor: PropertyD
 export function Fault(target: any, propertyKey: string, parameterIndex: number) {
   const method: string = 'decorator.fault';
 
-  let cbFn: Function = target[propertyKey];
+  const cbFn: AnyFn = target[propertyKey];
   debug(method + ' [Enter]', cbFn.name);
   let cmd: CallbackMetadata = cbFn[CALLBACK_METADATA_SLOT];
   if (!cmd) {
@@ -118,7 +119,7 @@ export function Fault(target: any, propertyKey: string, parameterIndex: number) 
 export function Output(target: any, propertyKey: string, parameterIndex: number) {
   const method: string = 'decorator.output';
 
-  let cbFn: Function = target[propertyKey];
+  const cbFn: AnyFn = target[propertyKey];
   debug(method + ' [Enter]', cbFn.name);
   let cmd: CallbackMetadata = cbFn[CALLBACK_METADATA_SLOT];
   if (!cmd) {

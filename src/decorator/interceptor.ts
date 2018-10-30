@@ -24,6 +24,7 @@ import * as Debug from 'debug';
 import { interceptorRegistry } from '../runtime/interceptor';
 import { InterceptorMetadata, INTERCEPTOR_METADATA_SLOT } from '../metadata/interceptor';
 import { InteractionStyleType } from '../metadata/common';
+import { AnyFn } from '../util/types';
 
 const debug: Debug.IDebugger = Debug('proxify:decorator:interceptor');
 
@@ -35,16 +36,16 @@ const debug: Debug.IDebugger = Debug('proxify:decorator:interceptor');
  * The decorator interceptor will be registered into interceptor registry
  *
  */
-export function Interceptor(decorator?: { interactionStyle: InteractionStyleType }): Function {
-  return function(clz: any) {
-    let method: string = 'decorate.interceptor';
+export function Interceptor(decorator?: { interactionStyle: InteractionStyleType }): AnyFn {
+  return function(clz: any): AnyFn {
+    const method: string = 'decorate.interceptor';
     debug(method + ' [Enter]', clz.name);
     if (clz[INTERCEPTOR_METADATA_SLOT]) {
       debug(method + ' [Exit](already registered)', clz.name);
       return clz;
     }
 
-    let metadata: InterceptorMetadata = new InterceptorMetadata();
+    const metadata: InterceptorMetadata = new InterceptorMetadata();
     metadata.__class__ = clz;
     metadata.interactionStyle = decorator.interactionStyle;
 
