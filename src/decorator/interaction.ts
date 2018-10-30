@@ -15,7 +15,7 @@
  */
 
 /**
- * @module Provides the method level annotation of QoS via ECMAScript 2016 decorator,
+ * @module Provides the method level decorator of QoS via ECMAScript 2016 decorator,
  * which is aimed to enable an proxified method managed by node-proxify framework
  *
  */
@@ -25,12 +25,12 @@ import { OPERATION_METADATA_SLOT, OperationMetadata } from '../metadata/operatio
 import { InteractionStyleType } from '../metadata/common';
 import { CALLBACK_METADATA_SLOT, CallbackMetadata } from '../metadata/callback';
 
-const debug: Debug.IDebugger = Debug('proxify:annotation:interaction');
+const debug: Debug.IDebugger = Debug('proxify:decorator:interaction');
 
 /**
- * @annotation for method level, InteractionStyle
+ * @decorator for method level, InteractionStyle
  *
- * The annotation is used to mark the method to be sync or asyn interaction style
+ * The decorator is used to mark the method to be sync or asyn interaction style
  *
  */
 export function InteractionStyle(value: InteractionStyleType) {
@@ -52,9 +52,9 @@ export function InteractionStyle(value: InteractionStyleType) {
 }
 
 /**
- * @annotation Completion
+ * @decorator Completion
  *
- * Method parameter annotation, which used to mark the parameter as completion method
+ * Method parameter decorator, which used to mark the parameter as completion method
  *
  * Usage:
  *  greet(name: string, @Completion cb: Function)
@@ -77,9 +77,9 @@ export function Completion(target: any, propertyKey: string, parameterIndex: num
 }
 
 /**
- * @annotation Callback
+ * @decorator Callback
  *
- * Method parameter annotation, which used to mark the parameter as callback method
+ * Method parameter decorator, which used to mark the parameter as callback method
  *
  * Usage:
  * @Callback

@@ -31,6 +31,7 @@ import { ComponentMetadata, COMPONENT_METADATA_SLOT } from '../metadata/componen
 import { OperationMetadata, OPERATION_METADATA_SLOT } from '../metadata/operation';
 import { CallbackMetadata, CALLBACK_METADATA_SLOT } from '../metadata/callback';
 import { InvocationContext, EndpointInvoker, Fault } from './invocation';
+import { AnyFn } from '../util/types';
 
 const debug: Debug.IDebugger = Debug('proxify:runtime:wrapper');
 
@@ -459,7 +460,7 @@ class ClassWrapperTrapHandler extends ObjectWrapperTrapHandler {
  * Export class for Wrapper
  */
 export class Wrapper {
-  static wrap(clz: Function, options: any): Function {
+  static wrap(clz: AnyFn, options: any): AnyFn {
     let method: string = 'Wrapper.wrap';
     debug(method + ' [Enter]', clz, options);
 

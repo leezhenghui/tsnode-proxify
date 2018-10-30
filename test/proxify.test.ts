@@ -22,10 +22,10 @@
 import { expect }                                      from 'chai';
 import * as Q                                          from 'q';
 import * as Debug                                      from 'debug';
-import { Interceptor }                                 from '../src/annotation/interceptor'; 
-import { Component }                                   from '../src/annotation/component';
-import { QoS }                                         from '../src/annotation/qos';
-import { InteractionStyle, Completion, Callback, Fault, Output } from '../src/annotation/interaction';
+import { Interceptor }                                 from '../src/decorator/interceptor'; 
+import { Component }                                   from '../src/decorator/component';
+import { QoS }                                         from '../src/decorator/qos';
+import { InteractionStyle, Completion, Callback, Fault, Output } from '../src/decorator/interaction';
 import { InteractionStyleType, isComponentManagedProp, isCallbackWrappedProp } from '../src/metadata/common';
 import { INTERCEPTOR_METADATA_SLOT }                   from '../src/metadata/interceptor';
 import { OPERATION_METADATA_SLOT }                     from '../src/metadata/operation';
@@ -72,7 +72,7 @@ import { InvocationContext, Processor, ProcessStatus } from '../src/runtime/invo
 		}
 	}
 
-	class BarInterceptorWithoutAnnotation extends interceptor.AbstractInterceptor{
+	class BarInterceptorWithoutDecorator extends interceptor.AbstractInterceptor{
 		constructor(config: any) {
 			super(config);	
 		}
@@ -82,7 +82,7 @@ import { InvocationContext, Processor, ProcessStatus } from '../src/runtime/invo
 		}
 
 		public getName(): string {
-			return 'BarInterceptorWithoutAnnotation';	
+			return 'BarInterceptorWithoutDecorator';	
 		}
 	}
 
@@ -669,13 +669,13 @@ import { InvocationContext, Processor, ProcessStatus } from '../src/runtime/invo
 
 describe('@Interceptor Tests', function() {
 
-	it('Register Interceptor Class/Metadata Via Annotation', function() {
+	it('Register Interceptor Class/Metadata Via Decorator', function() {
 		let creator: Function = interceptor.interceptorRegistry.getInterceptorClass(FooInterceptor.name);	
 		expect(creator.name).to.equal(FooInterceptor.name);
 		creator = interceptor.interceptorRegistry.getInterceptorClass(BarInterceptor.name);
 		expect(creator.name).to.equal(BarInterceptor.name);
 		expect(creator[INTERCEPTOR_METADATA_SLOT].interactionStyle).to.equal(InteractionStyleType.SYNC);
-		creator = interceptor.interceptorRegistry.getInterceptorClass(BarInterceptorWithoutAnnotation.name);
+		creator = interceptor.interceptorRegistry.getInterceptorClass(BarInterceptorWithoutDecorator.name);
 		expect(creator).to.equal(null);
 	});
 });
@@ -697,18 +697,18 @@ describe('@Component, @QoS, @Completion, @Callback Basic Function Tests', functi
 		expect(i.getName()).to.equal('LoggingInterceptor');
 	});
 
-	it('Instanceof Operator Tests on the Class without Proxify Annotation', function() {
+	it('Instanceof Operator Tests on the Class without Proxify Decorator', function() {
 		let foo: Foo = new Foo();
 		expect(foo instanceof Foo).to.equal(true);
 		expect(foo instanceof Stock).to.equal(false);
 	});
 
-	it('Instanceof Operator Tests on the Class with Proxify Annotation', function() {
+	it('Instanceof Operator Tests on the Class with Proxify Decorator', function() {
 		let foo: USStock = new USStock('IBM', 100);
 		expect(foo instanceof Stock).to.equal(true);
 	});
 
-	it('Class Without Proxify annotation should not be wrapped by Proxy', function() {
+	it('Class Without Proxify decorator should not be wrapped by Proxy', function() {
 		expect(Stock[isComponentManagedProp]).to.equal(undefined);
 	});
 

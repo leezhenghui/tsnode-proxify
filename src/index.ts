@@ -18,10 +18,10 @@
 //               Decorator Part
 //=====================================================================
 
-export { Interceptor } from './annotation/interceptor';
-export { Component } from './annotation/component';
-export { QoS } from './annotation/qos';
-export { InteractionStyle, Completion, Callback, Fault, Output } from './annotation/interaction';
+export { Interceptor } from './decorator/interceptor';
+export { Component } from './decorator/component';
+export { QoS } from './decorator/qos';
+export { InteractionStyle, Completion, Callback, Fault, Output } from './decorator/interaction';
 
 //=====================================================================
 //               Metadata Part

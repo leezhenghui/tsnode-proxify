@@ -59,7 +59,7 @@ export class InterceptorFactory {
 }
 
 /**
- * Metadata provided by proxify method annoation
+ * Metadata provided by proxify method decorator 
  */
 export class OperationMetadata {
   public __className__: string;

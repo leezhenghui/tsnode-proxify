@@ -15,7 +15,7 @@
  */
 
 /**
- * @module Interceptor annotation for class,
+ * @module Interceptor decorator for class,
  * ES7 decorator hanlder will pick up the interceptor with the metadata, and register it to interceptor registry
  *
  */
@@ -25,17 +25,17 @@ import { interceptorRegistry } from '../runtime/interceptor';
 import { InterceptorMetadata, INTERCEPTOR_METADATA_SLOT } from '../metadata/interceptor';
 import { InteractionStyleType } from '../metadata/common';
 
-const debug: Debug.IDebugger = Debug('proxify:annotation:interceptor');
+const debug: Debug.IDebugger = Debug('proxify:decorator:interceptor');
 
 /**
- * Interceptor annotation class
- * The annotation is used to mark the class to be interceptor, and providing the runtime metadata :
+ * Interceptor decorator class
+ * The decorator is used to mark the class to be interceptor, and providing the runtime metadata :
  *   interactionStyle: InteractionStyle.ASYNC | InteractionStyle.SYNC
  *
- * The annotated interceptor will be registered into interceptor registry
+ * The decorator interceptor will be registered into interceptor registry
  *
  */
-export function Interceptor(annotation?: { interactionStyle: InteractionStyleType }): Function {
+export function Interceptor(decorator?: { interactionStyle: InteractionStyleType }): Function {
   return function(clz: any) {
     let method: string = 'decorate.interceptor';
     debug(method + ' [Enter]', clz.name);
@@ -46,7 +46,7 @@ export function Interceptor(annotation?: { interactionStyle: InteractionStyleTyp
 
     let metadata: InterceptorMetadata = new InterceptorMetadata();
     metadata.__class__ = clz;
-    metadata.interactionStyle = annotation.interactionStyle;
+    metadata.interactionStyle = decorator.interactionStyle;
 
     // register interceptor
     interceptorRegistry.register(metadata);

@@ -15,7 +15,7 @@
  */
 
 /**
- * @module Provides the method level annotation of QoS via ECMAScript 2016 decorator,
+ * @module Provides the method level decorator of QoS via ECMAScript 2016 decorator,
  * which is aimed to enable an proxified method managed by node-proxify framework
  *
  */
@@ -24,7 +24,7 @@ import * as Debug from 'debug';
 import { OPERATION_METADATA_SLOT, OperationMetadata } from '../metadata/operation';
 import { AbstractInterceptor } from '../runtime/interceptor';
 
-const debug: Debug.IDebugger = Debug('proxify:annotation:qos');
+const debug: Debug.IDebugger = Debug('proxify:decorator:qos');
 
 /**
  * @QoS, method level decorator
