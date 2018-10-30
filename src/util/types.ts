@@ -15,9 +15,8 @@
  */
 
 /**
- * @module Provides the common types definition. 
+ * @module Provides the common types definition.
  *
  */
 
-export type AnyFn = (... args: any[]) => any;
-
+export type AnyFn = (...args: any[]) => any;

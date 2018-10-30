@@ -50,9 +50,9 @@ export function QoS(config?: { interceptorType?: any; initParams?: any; singleto
     omd.__target_fn__ = omd.__target_fn__ || operation;
     omd.__operationName__ = omd.__operationName__ || propertyKey;
     if (config) {
-			if (config.interceptorType &&  ! (typeof config.interceptorType === 'function')) {
-		     throw Error('Invalid interceptorType: '+ config.interceptorType);	
-			}
+      if (config.interceptorType && !(typeof config.interceptorType === 'function')) {
+        throw Error('Invalid interceptorType: ' + config.interceptorType);
+      }
       omd.addQoS(config.interceptorType, config.initParams, config.singleton);
     }
     operation[OPERATION_METADATA_SLOT] = omd;

@@ -162,7 +162,6 @@ export class ProcessStatus {
 }
 
 export abstract class Processor {
-
   private __next: Processor;
   private __previous: Processor;
   private __frozen: boolean;
@@ -175,7 +174,6 @@ export abstract class Processor {
 
   public abstract canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void;
   public abstract getName(): string;
-
 
   /**
    * Not like protected modifier in java, typescript does not have the accessiable control for
@@ -289,7 +287,7 @@ class HeaderInvoker extends Processor {
     self.canProcess(
       context,
       function(error: any, canProcess: boolean) {
-        let interactionType: InteractionType = context.__interaction__.interactionType;
+        const interactionType: InteractionType = context.__interaction__.interactionType;
         switch (interactionType) {
           case InteractionType.INTERACTION_LOCATE:
           case InteractionType.INTERACTION_INVOKE:
@@ -325,7 +323,6 @@ class HeaderInvoker extends Processor {
  *   In LOCATE interaction type, it will change the type to LOCATE_RESULT
  */
 class TailInvoker extends Processor {
-
   private targetFn: AnyFn;
 
   public constructor(targetFn: AnyFn) {
@@ -522,9 +519,9 @@ export class EndpointInvoker {
       }.bind(self),
     );
 
-    //=================================================
+    // =================================================
     // only contains sync interceptors in request path
-    //=================================================
+    // =================================================
 
     // sync-callback or sync-return
     if (
@@ -617,8 +614,8 @@ export class EndpointInvoker {
       }.bind(self),
     );
   }
-  
-	private init(): void {
+
+  private init(): void {
     const self: EndpointInvoker = this;
     const factories: InterceptorFactory[] = this.omd.getInterceptorFactories();
 

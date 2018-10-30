@@ -60,10 +60,9 @@ export class InterceptorFactory {
 }
 
 /**
- * Metadata provided by proxify method decorator 
+ * Metadata provided by proxify method decorator
  */
 export class OperationMetadata {
-
   public __className__: string;
   public __target_class__: AnyFn;
   public __operationName__: string;

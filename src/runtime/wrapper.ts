@@ -44,7 +44,6 @@ const CALLBACK_STACK_CONTEXT_PUSH = '__callback_stack_context_push__';
  *
  */
 class CallbackMethodWrapperTrapHandler {
-
   private metadata: CallbackMetadata;
   private invoker: EndpointInvoker;
   private iCtx: InvocationContext;
@@ -109,7 +108,7 @@ class CallbackMethodWrapperTrapHandler {
 
   public apply(operation: AnyFn, context: any, args: any[]): any {
     const self: CallbackMethodWrapperTrapHandler = this;
-    let method: string = 'CallbackMethodWrapperTrapHandler.apply';
+    const method: string = 'CallbackMethodWrapperTrapHandler.apply';
 
     try {
       debug(method + ' [Enter]', operation.name, args, this.metadata);
@@ -144,9 +143,9 @@ class CallbackMethodWrapperTrapHandler {
         }
       }
 
-      let reval = Reflect.apply(operation, context, args);
-      this.invoker = null;
-      this.iCtx = null;
+      const reval = Reflect.apply(operation, context, args);
+      self.invoker = null;
+      self.iCtx = null;
       debug(method + ' [Exit]', reval);
       return reval;
     } catch (err) {
@@ -154,8 +153,8 @@ class CallbackMethodWrapperTrapHandler {
       throw err;
     }
   }
-  
-	private popStackContext(): {
+
+  private popStackContext(): {
     metadata?: CallbackMetadata;
     invoker: EndpointInvoker;
     iCtx: InvocationContext;
@@ -183,13 +182,13 @@ class CallbackMethodWrapperTrapHandler {
 }
 
 class BindWrapperTrapHandler {
+  private metadata: OperationMetadata;
+  private origFn: AnyFn;
+
   constructor(metadata: OperationMetadata, origFn: AnyFn) {
     this.metadata = metadata;
     this.origFn = origFn;
   }
-
-  private metadata: OperationMetadata;
-  private origFn: AnyFn;
 
   public get(target: any, name: string): any {
     const method: string = 'BindWrapperTrapHandler.get';
@@ -231,7 +230,6 @@ const BIND_METHOD: string = 'bind';
  * Method Proxy wrapper trap handler
  */
 class MethodWrapperTrapHandler {
-
   private metadata: OperationMetadata;
   private targetObject: any;
   private origFn: AnyFn;
@@ -320,7 +318,6 @@ class MethodWrapperTrapHandler {
  *
  */
 class ObjectWrapperTrapHandler {
-
   protected metadata: ComponentMetadata;
   protected reservedJSFunctions: Set<string> = new Set([
     'constructor',
@@ -345,7 +342,6 @@ class ObjectWrapperTrapHandler {
   constructor(metadata: ComponentMetadata) {
     this.metadata = metadata;
   }
-
 
   public set(target: any, name: string, value: any): boolean {
     const method: string = 'ObjectWrapperTrapHandler.set';
@@ -412,7 +408,7 @@ class ObjectWrapperTrapHandler {
 
     debug(method + ' method level metadata:', omd);
 
-    const wrappedMethod: AnyFn= new Proxy(target[name], new MethodWrapperTrapHandler(omd, target, target[name]));
+    const wrappedMethod: AnyFn = new Proxy(target[name], new MethodWrapperTrapHandler(omd, target, target[name]));
 
     // note: we need replace the original function
     // otherwise, <obj>.<fn> !== this.<fn>

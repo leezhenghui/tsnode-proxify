@@ -28,7 +28,7 @@ const debug: Debug.IDebugger = Debug('proxify:metadata:component');
 export const COMPONENT_METADATA_SLOT: string = '__component_metadata_slot__';
 
 /**
- * Metadata provided by proxify class decorator 
+ * Metadata provided by proxify class decorator
  */
 export class ComponentMetadata {
   public __className__: string;

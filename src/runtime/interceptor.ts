@@ -247,7 +247,6 @@ export abstract class AbstractInterceptor extends Processor {
  *
  */
 export class Registry<I extends Processor, M extends InterceptorMetadata> {
-
   private __interceptors__: { [name: string]: M } = {};
 
   /**
@@ -301,9 +300,7 @@ export class Registry<I extends Processor, M extends InterceptorMetadata> {
     }
 
     if (this.__interceptors__[ides.__class__.name]) {
-      debug(
-        method + ' [WARNING]: Dumplicated interceptor definitions: "' + ides.__class__.name + '" in registry',
-      );
+      debug(method + ' [WARNING]: Dumplicated interceptor definitions: "' + ides.__class__.name + '" in registry');
 
       debug(method + ' [Exit](failed)', ides);
       return;
