@@ -1,0 +1,114 @@
+Running 20s test @ http://localhost:3000/sync/world
+  100 threads and 100 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     9.47ms    1.88ms  53.27ms   95.76%
+    Req/Sec   106.58     13.01   313.00     89.64%
+  Latency Distribution
+     50%    9.01ms
+     75%    9.28ms
+     90%   10.48ms
+     99%   18.03ms
+  212994 requests in 20.09s, 48.34MB read
+Requests/sec:  10602.88
+Transfer/sec:      2.41MB
+
+
+Running 20s test @ http://localhost:3000/sync-callback/world
+  100 threads and 100 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     8.88ms    0.86ms  24.22ms   83.66%
+    Req/Sec   113.15      8.10   656.00     95.29%
+  Latency Distribution
+     50%    8.64ms
+     75%    8.85ms
+     90%    9.96ms
+     99%   10.87ms
+  226103 requests in 20.10s, 51.32MB read
+Requests/sec:  11248.95
+Transfer/sec:      2.55MB
+
+Running 20s test @ http://localhost:3000/async-promise/world
+  100 threads and 100 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    14.52ms    5.17ms  44.13ms   83.29%
+    Req/Sec    69.14      9.99   202.00     63.88%
+  Latency Distribution
+     50%   11.80ms
+     75%   16.76ms
+     90%   23.30ms
+     99%   29.44ms
+  138716 requests in 20.09s, 31.48MB read
+Requests/sec:   6904.60
+Transfer/sec:      1.57MB
+
+Running 20s test @ http://localhost:3000/async-callback/world
+  100 threads and 100 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    13.23ms    4.88ms  90.08ms   86.46%
+    Req/Sec    76.33     10.68   232.00     67.73%
+  Latency Distribution
+     50%   11.04ms
+     75%   14.00ms
+     90%   20.78ms
+     99%   28.38ms
+  153136 requests in 20.08s, 34.76MB read
+Requests/sec:   7624.95
+Transfer/sec:      1.73MB
+
+Running 20s test @ http://localhost:3000/qos/sync/world
+  100 threads and 100 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    13.21ms    3.26ms  50.49ms   91.80%
+    Req/Sec    76.07     11.76   666.00     79.85%
+  Latency Distribution
+     50%   11.94ms
+     75%   14.32ms
+     90%   15.72ms
+     99%   28.01ms
+  152618 requests in 20.10s, 35.80MB read
+Requests/sec:   7593.17
+Transfer/sec:      1.78MB
+
+Running 20s test @ http://localhost:3000/qos/sync-callback/world
+  100 threads and 100 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    13.58ms    3.36ms  70.77ms   92.56%
+    Req/Sec    74.00     10.13   282.00     85.22%
+  Latency Distribution
+     50%   12.37ms
+     75%   14.60ms
+     90%   16.17ms
+     99%   28.73ms
+  148446 requests in 20.09s, 33.69MB read
+Requests/sec:   7388.42
+Transfer/sec:      1.68MB
+
+Running 20s test @ http://localhost:3000/qos/async-promise/world
+  100 threads and 100 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    21.06ms    6.91ms  52.31ms   73.27%
+    Req/Sec    47.49      6.25   101.00     59.18%
+  Latency Distribution
+     50%   16.97ms
+     75%   28.43ms
+     90%   31.54ms
+     99%   35.30ms
+  95268 requests in 20.10s, 21.62MB read
+Requests/sec:   4740.25
+Transfer/sec:      1.08MB
+
+Running 20s test @ http://localhost:3000/qos/async-callback/world
+  100 threads and 100 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    19.04ms    5.60ms  70.36ms   81.04%
+    Req/Sec    52.59      8.20   191.00     83.54%
+  Latency Distribution
+     50%   16.19ms
+     75%   21.88ms
+     90%   27.71ms
+     99%   35.04ms
+  105516 requests in 20.10s, 23.95MB read
+Requests/sec:   5250.80
+Transfer/sec:      1.19MB
+
+

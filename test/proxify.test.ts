@@ -581,6 +581,10 @@ import { InvocationContext, Processor, ProcessStatus } from '../src/runtime/invo
 				}	
 			});
 
+			// add test point for proxy instance toString() testing
+			// Per JS spec, TypeError will be thrown on a proxy toString()
+			// we need additional handling on this to return a valid function string.
+			let cbString = cb.toString();
 			cb(null, reval);
 		}
 

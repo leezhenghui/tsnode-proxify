@@ -75,6 +75,16 @@ class CallbackMethodWrapperTrapHandler {
       debug(method + ' [Exit]', true);
       return true;
     }
+
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/toString
+    // The toString() method will throw a TypeError exception ("Function.prototype.toString called on incompatible object"),
+    // if its this value object is not a Function object. It will also throw for Proxy objects
+    if ('toString' === name) {
+      return function() {
+        return target.toString();
+      };
+    }
+
     debug(method + ' [Exit]', target[name]);
     return target[name];
   }
