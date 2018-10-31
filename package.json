@@ -6,7 +6,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "rm -r dist && tsc",
     "unittest": "mocha --compilers ts:ts-node/register,tsx:ts-node/register ./test/**/*test.ts",
     "unittest:debug": "DEBUG=proxify* mocha --compilers ts:ts-node/register,tsx:ts-node/register ./test/**/*test.ts",
     "test": "npm run build && npm run unittest",
