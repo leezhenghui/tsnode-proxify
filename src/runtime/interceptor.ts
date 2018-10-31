@@ -63,6 +63,7 @@ export abstract class AbstractInterceptor extends Processor {
   public _process(context: InvocationContext, next: (error: any, status: ProcessStatus) => void): void {
     const self: AbstractInterceptor = this;
     const method: string = self.getName() + '._process';
+    context.__setCurrentProcessor(self);
     debug(method + ' [Etner]', context);
 
     self.canProcess(

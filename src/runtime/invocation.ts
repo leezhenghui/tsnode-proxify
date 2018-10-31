@@ -73,6 +73,15 @@ export class Fault {
 }
 
 export class InvocationContext {
+  private currentProssor: Processor = null;
+
+  /**
+   * Session contains all of data for
+   * current invocation, including domain/tenant
+   * info
+   */
+  private slots: Map<string, any> = new Map<string, any>();
+
   /**
    * arguments for the invocation
    */
@@ -104,12 +113,21 @@ export class InvocationContext {
    */
   public __interaction__: Interaction;
 
-  /**
-   * Session contains all of data for
-   * current invocation, including domain/tenant
-   * info
-   */
-  public slots: Map<string, any> = new Map<string, any>();
+  public getInteractionType(): InteractionType {
+    const self: InvocationContext = this;
+    return self.__interaction__.interactionType;
+  }
+
+  public _setInteractionType(interactionType: InteractionType): void {
+    const self: InvocationContext = this;
+    // TODO, do validation, only allow Header and Tail Invoker to call this method
+    self.__interaction__.interactionType = interactionType;
+  }
+
+  public __setCurrentProcessor(p: Processor): void {
+    const self: InvocationContext = this;
+    self.currentProssor = p;
+  }
 
   public _isCallbackSupported(): boolean {
     if (this.__interaction__.omd.__completion_fn_param_position__ === undefined) {
@@ -148,6 +166,26 @@ export class InvocationContext {
 
   public _isTargetInvoked(): boolean {
     return this.__interaction__._isTargetInvoked;
+  }
+
+  public getSlotContext(): any {
+    const self: InvocationContext = this;
+
+    if (!self.currentProssor) {
+      return;
+    }
+
+    const slotCtx: any = self.slots.get(self.currentProssor.getName());
+
+    return slotCtx;
+  }
+
+  public setSlotContext(slotCtx: any): void {
+    const self: InvocationContext = this;
+    if (!self.currentProssor) {
+      return;
+    }
+    self.slots.set(self.currentProssor.getName(), slotCtx);
   }
 }
 
@@ -274,20 +312,21 @@ class HeaderInvoker extends Processor {
   public _process(context: InvocationContext, next: (error: any, status: ProcessStatus) => void): void {
     const self: Processor = this;
     const method: string = self.getName() + '._process';
+    context.__setCurrentProcessor(self);
 
     if (!context.__interaction__) {
       context.__interaction__ = new Interaction();
       context.__interaction__.omd = this.omd;
-      context.__interaction__.interactionType = InteractionType.INTERACTION_LOCATE;
+      context._setInteractionType(InteractionType.INTERACTION_LOCATE);
     }
 
-    debug(method, '[header]', context.__interaction__.interactionType);
-    // console.log('==>[header]: processing ' + context.__interaction__.interactionType);
+    debug(method, '[header]', context.getInteractionType());
+    // console.log('==>[header]: processing ' + context.getInteractionType());
 
     self.canProcess(
       context,
       function(error: any, canProcess: boolean) {
-        const interactionType: InteractionType = context.__interaction__.interactionType;
+        const interactionType: InteractionType = context.getInteractionType();
         switch (interactionType) {
           case InteractionType.INTERACTION_LOCATE:
           case InteractionType.INTERACTION_INVOKE:
@@ -298,7 +337,7 @@ class HeaderInvoker extends Processor {
               }.bind(self),
             );
           case InteractionType.INTERACTION_LOCATE_RESULT:
-            context.__interaction__.interactionType = InteractionType.INTERACTION_INVOKE;
+            context._setInteractionType(InteractionType.INTERACTION_INVOKE);
             return self._process(
               context,
               function(error: any, status: ProcessStatus) {
@@ -341,16 +380,17 @@ class TailInvoker extends Processor {
   public _process(context: InvocationContext, next: (error: any, status: ProcessStatus) => void): void {
     const self: TailInvoker = this;
     const method: string = self.getName() + '._process';
-    // console.log('==>[tail]: processing ' + context.__interaction__.interactionType);
-    debug(method, '[tail]', context.__interaction__.interactionType);
+    context.__setCurrentProcessor(self);
+    // console.log('==>[tail]: processing ' + context.getInteractionType());
+    debug(method, '[tail]', context.getInteractionType());
 
     self.canProcess(
       context,
       function(error: any, canProcess: boolean) {
-        const interactionType: InteractionType = context.__interaction__.interactionType;
+        const interactionType: InteractionType = context.getInteractionType();
         switch (interactionType) {
           case InteractionType.INTERACTION_LOCATE:
-            context.__interaction__.interactionType = InteractionType.INTERACTION_LOCATE_RESULT;
+            context._setInteractionType(InteractionType.INTERACTION_LOCATE_RESULT);
             return self._process(context, function(error: any, status: ProcessStatus) {
               next(error, status);
             });
@@ -368,8 +408,8 @@ class TailInvoker extends Processor {
 
               // sync callback mode
               if (
-                context.__interaction__.interactionType === InteractionType.INTERACTION_INVOKE_RESULT ||
-                context.__interaction__.interactionType === InteractionType.INTERACTION_INVOKE_FAULT
+                context.getInteractionType() === InteractionType.INTERACTION_INVOKE_RESULT ||
+                context.getInteractionType() === InteractionType.INTERACTION_INVOKE_FAULT
               ) {
                 debug(method, '[tail] sync callback mode');
                 context.__interaction__.__completion_style__ = CompletionStyle.SYNC_CALLBACK;
@@ -386,7 +426,7 @@ class TailInvoker extends Processor {
                 context.output = Q(reval)
                   .then(
                     function(result: any) {
-                      context.__interaction__.interactionType = InteractionType.INTERACTION_INVOKE_RESULT;
+                      context._setInteractionType(InteractionType.INTERACTION_INVOKE_RESULT);
                       realResult = result;
                       const deferred: Q.Deferred<any> = Q.defer<any>();
                       self._process(
@@ -400,7 +440,7 @@ class TailInvoker extends Processor {
                     }.bind(self),
                     function(error: any) {
                       realError = error;
-                      context.__interaction__.interactionType = InteractionType.INTERACTION_INVOKE_FAULT;
+                      context._setInteractionType(InteractionType.INTERACTION_INVOKE_FAULT);
                       const deferred: Q.Deferred<any> = Q.defer<any>();
                       self._process(
                         context,
@@ -433,7 +473,7 @@ class TailInvoker extends Processor {
               // sync-directly
               debug(method, '[tail] sync directly return value mode');
               context.__interaction__.__completion_style__ = CompletionStyle.SYNC_DIRECTLY;
-              context.__interaction__.interactionType = InteractionType.INTERACTION_INVOKE_RESULT;
+              context._setInteractionType(InteractionType.INTERACTION_INVOKE_RESULT);
               self._process(
                 context,
                 function(error: any, status: ProcessStatus) {
@@ -448,7 +488,7 @@ class TailInvoker extends Processor {
               fault.reason = error.message || error.reason;
               fault.details = error;
               fault.isBizFault = true;
-              context.__interaction__.interactionType = InteractionType.INTERACTION_INVOKE_FAULT;
+              context._setInteractionType(InteractionType.INTERACTION_INVOKE_FAULT);
               self._process(
                 context,
                 function(error: any, status: ProcessStatus) {
@@ -467,6 +507,52 @@ class TailInvoker extends Processor {
     const self: TailInvoker = this;
     const reval = Reflect.apply(self.targetFn, thisArg, args);
     return reval;
+  }
+}
+
+/* 
+	* Predefined built-in processor, which will be called when the method completion occurs in an callback approach, e.g: async-callback. 
+	* 
+ */
+class OnInvokeResponser extends Processor {
+  public constructor(tail: TailInvoker) {
+    super();
+    this._setPrevious(tail);
+  }
+
+  public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
+    callback(null, true);
+  }
+
+  public getName(): string {
+    return 'system:internal:onInvokeResponser';
+  }
+
+  public _process(context: InvocationContext, next: (error: any, status: ProcessStatus) => void): void {
+    const self: OnInvokeResponser = this;
+    context.__setCurrentProcessor(self);
+    const holdOnNexter = context.__interaction__.__hold_on_nexter__;
+
+    self._getPrevious()._process(
+      context,
+      function(error: any, status: ProcessStatus) {
+        return holdOnNexter(error, status);
+      }.bind(self),
+    );
+  }
+
+  public onInvokeResponse(context: InvocationContext): void {
+    const self: OnInvokeResponser = this;
+    context._setInteractionType(InteractionType.INTERACTION_INVOKE_RESULT);
+
+    self._process(context, null);
+  }
+
+  public onInvokeFault(context: InvocationContext): void {
+    const self: OnInvokeResponser = this;
+    context._setInteractionType(InteractionType.INTERACTION_INVOKE_FAULT);
+
+    self._process(context, null);
   }
 }
 
@@ -584,15 +670,8 @@ export class EndpointInvoker {
 
     debug(method, context);
 
-    const holdOnNexter = context.__interaction__.__hold_on_nexter__;
-    context.__interaction__.interactionType = InteractionType.INTERACTION_INVOKE_RESULT;
-
-    self.tail._process(
-      context,
-      function(error: any, status: ProcessStatus) {
-        return holdOnNexter(error, status);
-      }.bind(self),
-    );
+    const onInvokeResponser: OnInvokeResponser = new OnInvokeResponser(self.tail);
+    onInvokeResponser.onInvokeResponse(context);
   }
 
   public invokeFaultAsync(context: InvocationContext) {
@@ -604,15 +683,8 @@ export class EndpointInvoker {
 
     debug(method, context);
 
-    const holdOnNexter = context.__interaction__.__hold_on_nexter__;
-    context.__interaction__.interactionType = InteractionType.INTERACTION_INVOKE_FAULT;
-
-    self.tail._process(
-      context,
-      function(error: any, status: ProcessStatus) {
-        return holdOnNexter(error, status);
-      }.bind(self),
-    );
+    const onInvokeResponser: OnInvokeResponser = new OnInvokeResponser(self.tail);
+    onInvokeResponser.onInvokeFault(context);
   }
 
   private init(): void {
