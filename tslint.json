@@ -1,14 +1,12 @@
 {
-  "extends": ["tslint:recommended", "tslint-config-prettier"],
 	"ordered-imports": false,
 	"max-classes-per-file": [true, 5],
-	"rules": {
-		"variable-name": [
-			true,
-			"ban-keywords",
-			"check-format",
-			"allow-leading-underscore"
-		]
-	},
-"only-arrow-functions": false 
+	"variable-name": [
+		true,
+		"ban-keywords",
+		"check-format",
+		"allow-leading-underscore",
+		"allow-trailing-underscore"
+	],
+	"only-arrow-functions": false 
 }
