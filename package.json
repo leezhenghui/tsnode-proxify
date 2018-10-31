@@ -1,6 +1,6 @@
 {
   "name": "tsnode-proxify",
-  "version": "0.1.0-beta.0",
+  "version": "0.2.0-beta.0",
   "private": false,
   "description": "Proxy-based AOP library for node.js. It allows you to extend/provide QoS handler and enable QoS to your methods via typescript decorators(metadata-programming syntax) without invasiveness, which increase modularity for your application",
   "main": "./dist/index.js",
