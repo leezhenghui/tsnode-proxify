@@ -19,686 +19,685 @@
  *
  */
 
-import { expect }                                      from 'chai';
-import * as Q                                          from 'q';
-import * as Debug                                      from 'debug';
-import { Interceptor }                                 from '../src/decorator/interceptor'; 
-import { Component }                                   from '../src/decorator/component';
-import { QoS }                                         from '../src/decorator/qos';
+import { expect } from 'chai';
+import * as Q from 'q';
+import * as Debug from 'debug';
+import { Interceptor } from '../src/decorator/interceptor';
+import { Component } from '../src/decorator/component';
+import { QoS } from '../src/decorator/qos';
 import { InteractionStyle, Completion, Callback, Fault, Output } from '../src/decorator/interaction';
 import { InteractionStyleType, isComponentManagedProp, isCallbackWrappedProp } from '../src/metadata/common';
-import { INTERCEPTOR_METADATA_SLOT }                   from '../src/metadata/interceptor';
-import { OPERATION_METADATA_SLOT }                     from '../src/metadata/operation';
-import { CALLBACK_METADATA_SLOT }                      from '../src/metadata/callback'; 
-import * as interceptor                                from '../src/runtime/interceptor';
+import { INTERCEPTOR_METADATA_SLOT } from '../src/metadata/interceptor';
+import { OPERATION_METADATA_SLOT } from '../src/metadata/operation';
+import { CALLBACK_METADATA_SLOT } from '../src/metadata/callback';
+import * as interceptor from '../src/runtime/interceptor';
 import { InvocationContext, Processor, ProcessStatus } from '../src/runtime/invocation';
-
 
 //=================================================
 //   Interceptor Registry Function Test Content
 //=================================================
 
-	@Interceptor({
-		"interactionStyle": InteractionStyleType.SYNC
-	})
-	class FooInterceptor extends interceptor.AbstractInterceptor {
-		constructor(config: any) {
-			super(config);	
-		}
+@Interceptor({
+  interactionStyle: InteractionStyleType.SYNC,
+})
+class FooInterceptor extends interceptor.AbstractInterceptor {
+  constructor(config: any) {
+    super(config);
+  }
 
-		public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
-			callback(null, true);	
-		}
+  public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
+    callback(null, true);
+  }
 
-		public getName(): string {
-			return 'FooInterceptor';	
-		}
-	}
+  public getName(): string {
+    return 'FooInterceptor';
+  }
+}
 
-	@Interceptor({
-		"interactionStyle": InteractionStyleType.SYNC
-	})
-	class BarInterceptor extends interceptor.AbstractInterceptor{
-		constructor(config: any) {
-			super(config);	
-		}
+@Interceptor({
+  interactionStyle: InteractionStyleType.SYNC,
+})
+class BarInterceptor extends interceptor.AbstractInterceptor {
+  constructor(config: any) {
+    super(config);
+  }
 
-		public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
-			callback(null, true);	
-		}
+  public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
+    callback(null, true);
+  }
 
-		public getName(): string {
-			return 'BarInterceptor';	
-		}
-	}
+  public getName(): string {
+    return 'BarInterceptor';
+  }
+}
 
-	class BarInterceptorWithoutDecorator extends interceptor.AbstractInterceptor{
-		constructor(config: any) {
-			super(config);	
-		}
+class BarInterceptorWithoutDecorator extends interceptor.AbstractInterceptor {
+  constructor(config: any) {
+    super(config);
+  }
 
-		public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
-			callback(null, true);	
-		}
+  public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
+    callback(null, true);
+  }
 
-		public getName(): string {
-			return 'BarInterceptorWithoutDecorator';	
-		}
-	}
+  public getName(): string {
+    return 'BarInterceptorWithoutDecorator';
+  }
+}
 
 //=================================================
 // Proxify Decorators Basic Function Test Content
 //=================================================
 
-	@Interceptor({
-		"interactionStyle": InteractionStyleType.SYNC
-	})
-	class FakeInterceptor extends interceptor.AbstractInterceptor{
-		constructor(config: any) {
-			super(config);	
-		}
+@Interceptor({
+  interactionStyle: InteractionStyleType.SYNC,
+})
+class FakeInterceptor extends interceptor.AbstractInterceptor {
+  constructor(config: any) {
+    super(config);
+  }
 
-		public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
-			callback(null, true);	
-		}
+  public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
+    callback(null, true);
+  }
 
-		public getName(): string {
-			return 'FooInterceptor';	
-		}
-	}
-	@Interceptor({
-		"interactionStyle": InteractionStyleType.SYNC
-	})
-	class LoggingInterceptor extends interceptor.AbstractInterceptor{
-		private debug:Debug.IDebugger = Debug('proxify:LoggingInterceptor');
-		private LOG_PREFIX: string = '[LoggingInterceptor] ';
-		constructor(config: any) {
-			super(config);	
-		}
+  public getName(): string {
+    return 'FooInterceptor';
+  }
+}
+@Interceptor({
+  interactionStyle: InteractionStyleType.SYNC,
+})
+class LoggingInterceptor extends interceptor.AbstractInterceptor {
+  private debug: Debug.IDebugger = Debug('proxify:LoggingInterceptor');
+  private LOG_PREFIX: string = '[LoggingInterceptor] ';
+  constructor(config: any) {
+    super(config);
+  }
 
-		private getTargetFullName (context: InvocationContext): string {
-			let targetFullName = context.__interaction__.omd.__className__ + '.' + context.__interaction__.omd.__operationName__;
+  private getTargetFullName(context: InvocationContext): string {
+    let targetFullName =
+      context.__interaction__.omd.__className__ + '.' + context.__interaction__.omd.__operationName__;
 
-			return targetFullName;
-		}
+    return targetFullName;
+  }
 
-		public init (context: InvocationContext, done: Function): void {
-			this.debug(this.LOG_PREFIX + ' init ');
-			done();
-		}
+  public init(context: InvocationContext, done: Function): void {
+    this.debug(this.LOG_PREFIX + ' init ');
+    done();
+  }
 
-		public handleRequest(context: InvocationContext, done: Function): void {
-			this.debug(this.LOG_PREFIX + ' handleRequest: ' + this.getTargetFullName(context));
-			done();	
-		}
+  public handleRequest(context: InvocationContext, done: Function): void {
+    this.debug(this.LOG_PREFIX + ' handleRequest: ' + this.getTargetFullName(context));
+    done();
+  }
 
-		public handleResponse(context: InvocationContext, done: Function): void {
-			this.debug(this.LOG_PREFIX + ' handleResponse: '+ this.getTargetFullName(context));
-			done();	
-		}
+  public handleResponse(context: InvocationContext, done: Function): void {
+    this.debug(this.LOG_PREFIX + ' handleResponse: ' + this.getTargetFullName(context));
+    done();
+  }
 
-		public handleFault(context: InvocationContext, done: Function): void {
-			this.debug(this.LOG_PREFIX + ' handleFault: '+ this.getTargetFullName(context));
-			done();	
-		}
+  public handleFault(context: InvocationContext, done: Function): void {
+    this.debug(this.LOG_PREFIX + ' handleFault: ' + this.getTargetFullName(context));
+    done();
+  }
 
-		public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
-			callback(null, true);	
-		}
+  public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
+    callback(null, true);
+  }
 
-		public getName(): string {
-			return 'LoggingInterceptor';	
-		}
-	}
+  public getName(): string {
+    return 'LoggingInterceptor';
+  }
+}
 
-	class Foo {
-		constructor() {}	
-		public getId() {
-			return 'id';
-		}
-	}
+class Foo {
+  constructor() {}
+  public getId() {
+    return 'id';
+  }
+}
 
-	class Stock {
-		private stocks: any[] = [];
-		public servedCount: number = 0;
-		protected scope:any = null; 
+class Stock {
+  private stocks: any[] = [];
+  public servedCount: number = 0;
+  protected scope: any = null;
 
-		constructor(name: string, price: number) {
-			if ( ! name) return this;
-			this.stocks.push({
-				name: name,
-				price: price
-			});	
-		}
+  constructor(name: string, price: number) {
+    if (!name) return this;
+    this.stocks.push({
+      name: name,
+      price: price,
+    });
+  }
 
-		static get DEFAULT_UNIT() {
-			return '$';	
-		}
+  static get DEFAULT_UNIT() {
+    return '$';
+  }
 
-		static set DEFAULT_UNIT(val:string) {
-			Stock.DEFAULT_UNIT = val;	
-		}
+  static set DEFAULT_UNIT(val: string) {
+    Stock.DEFAULT_UNIT = val;
+  }
 
-		@QoS({
-			interceptorType: FakeInterceptor,
-			initParams: null,
-			singleton: null
-		})
-		@QoS({
-			interceptorType: LoggingInterceptor,
-			initParams: null,
-			singleton: null
-		})
-		static getVersion(@Completion cb: Function): string {
-			if (cb) {
-				return cb(null, 'v1.0.0');	
-			}
-			return 'v1.0.0';	
-		}
+  @QoS({
+    interceptorType: FakeInterceptor,
+    initParams: null,
+    singleton: null,
+  })
+  @QoS({
+    interceptorType: LoggingInterceptor,
+    initParams: null,
+    singleton: null,
+  })
+  static getVersion(@Completion cb: Function): string {
+    if (cb) {
+      return cb(null, 'v1.0.0');
+    }
+    return 'v1.0.0';
+  }
 
-		@InteractionStyle(InteractionStyleType.SYNC)
-		@QoS({
-			interceptorType: FakeInterceptor,
-			initParams: null,
-			singleton: null
-		})
-		@QoS({
-			interceptorType: LoggingInterceptor,
-			initParams: null,
-			singleton: null
-		})
-		getPrice(name: string, @Completion cb: Function) {
-			// console.log('[getPrice]', name);
+  @InteractionStyle(InteractionStyleType.SYNC)
+  @QoS({
+    interceptorType: FakeInterceptor,
+    initParams: null,
+    singleton: null,
+  })
+  @QoS({
+    interceptorType: LoggingInterceptor,
+    initParams: null,
+    singleton: null,
+  })
+  getPrice(name: string, @Completion cb: Function) {
+    // console.log('[getPrice]', name);
 
-			var reval = null;
-			this.stocks.some(function(stock) {
-				if (name === stock.name) {
-					reval = stock;
-					return true;
-				}	
-			});
-			if (cb) return cb(null, reval.price);
-			return reval.price;	
-		}
+    var reval = null;
+    this.stocks.some(function(stock) {
+      if (name === stock.name) {
+        reval = stock;
+        return true;
+      }
+    });
+    if (cb) return cb(null, reval.price);
+    return reval.price;
+  }
 
-		@QoS({
-			interceptorType: FakeInterceptor,
-			initParams: null,
-			singleton: null
-		})
-		@QoS({
-			interceptorType: LoggingInterceptor,
-			initParams: null,
-			singleton: null
-		})
-		setPrice(name: string, price: number) {
-			// console.log('[setPrice]', name, price);
-			this.stocks.push({
-				name: name,
-				price: price
-			});	
-		}
+  @QoS({
+    interceptorType: FakeInterceptor,
+    initParams: null,
+    singleton: null,
+  })
+  @QoS({
+    interceptorType: LoggingInterceptor,
+    initParams: null,
+    singleton: null,
+  })
+  setPrice(name: string, price: number) {
+    // console.log('[setPrice]', name, price);
+    this.stocks.push({
+      name: name,
+      price: price,
+    });
+  }
 
-		printPrice(name: string, price: number): void {
-			// console.log('[printPrice]: ', name, price);
-		}
-	}
+  printPrice(name: string, price: number): void {
+    // console.log('[printPrice]: ', name, price);
+  }
+}
 
-	@Component({
-		"componentName": 'HKStock',
-	})
-	class HKStock extends Stock {
-		constructor(name: string, price: number) {
-			super(name, price); 
-		}
-	}
+@Component({
+  componentName: 'HKStock',
+})
+class HKStock extends Stock {
+  constructor(name: string, price: number) {
+    super(name, price);
+  }
+}
 
-	@Component({
-		"componentName": 'USStock',
-	})
-	class USStock extends Stock {
-		constructor(name: string, price: number) {
-			super(name, price); 
-		}
-	}
+@Component({
+  componentName: 'USStock',
+})
+class USStock extends Stock {
+  constructor(name: string, price: number) {
+    super(name, price);
+  }
+}
 
-	class  CBClass {
-		private QNAME: string = 'CBClass';
-		public reval: any;
+class CBClass {
+  private QNAME: string = 'CBClass';
+  public reval: any;
 
-		@Callback
-		cb(@Fault error: any, @Output result: any) {
-			if (error) {
-				// console.error('Error occurs in callback method, due to: ', error);
-				return;
-			}	
+  @Callback
+  cb(@Fault error: any, @Output result: any) {
+    if (error) {
+      // console.error('Error occurs in callback method, due to: ', error);
+      return;
+    }
 
-			// console.log(this.QNAME, '>>>> reval:', result);
-			this.reval = result;
-			// console.log(this.QNAME, '>>>> this:', this);
-			return result;
-		}	
-	}
+    // console.log(this.QNAME, '>>>> reval:', result);
+    this.reval = result;
+    // console.log(this.QNAME, '>>>> this:', this);
+    return result;
+  }
+}
 
 //=================================================
 //   Integration Test Content
 //=================================================
 
-	@Interceptor({
-		"interactionStyle": InteractionStyleType.SYNC
-	})
-	class Logger extends interceptor.AbstractInterceptor{
-		private LOG_PREFIX: string = '[Logger] ';
-		private debug:Debug.IDebugger = Debug('proxify:Logger');
+@Interceptor({
+  interactionStyle: InteractionStyleType.SYNC,
+})
+class Logger extends interceptor.AbstractInterceptor {
+  private LOG_PREFIX: string = '[Logger] ';
+  private debug: Debug.IDebugger = Debug('proxify:Logger');
 
-		public initMethodCalledCount: number = 0;
-		public handleRequestMethodCalledCount: number = 0;
-		public handleResponseMethodCalledCount: number = 0;
-		public handleFaultMethodCalledCount: number = 0;
+  public initMethodCalledCount: number = 0;
+  public handleRequestMethodCalledCount: number = 0;
+  public handleResponseMethodCalledCount: number = 0;
+  public handleFaultMethodCalledCount: number = 0;
 
-		private callStack: Array<number> = new Array<number>();
+  private callStack: Array<number> = new Array<number>();
 
-		constructor(config: any) {
-			super(config);	
-		}
+  constructor(config: any) {
+    super(config);
+  }
 
-		private getTargetFullName (context: InvocationContext): string {
-			let targetFullName = context.__interaction__.omd.__className__ + '.' + context.__interaction__.omd.__operationName__;
+  private getTargetFullName(context: InvocationContext): string {
+    let targetFullName =
+      context.__interaction__.omd.__className__ + '.' + context.__interaction__.omd.__operationName__;
 
-			return targetFullName;
-		}
+    return targetFullName;
+  }
 
-		public init (context: InvocationContext, done: Function): void {
-			const self: Logger = this; 
-			this.debug(this.LOG_PREFIX + ' init');
-			this.initMethodCalledCount ++;
-			// context.slots.set(self.getName(), {});
-			context.setSlotContext({});
-			done();
-		}
+  public init(context: InvocationContext, done: Function): void {
+    const self: Logger = this;
+    this.debug(this.LOG_PREFIX + ' init');
+    this.initMethodCalledCount++;
+    // context.slots.set(self.getName(), {});
+    context.setSlotContext({});
+    done();
+  }
 
-		public handleRequest(context: InvocationContext, done: Function): void {
-			const self: Logger = this; 
-			this.debug(this.LOG_PREFIX + ' handleRequest: ' + this.getTargetFullName(context));
-			this.handleRequestMethodCalledCount ++;
-      // let logCtx: any = context.slots.get(self.getName()).iid = self.handleRequestMethodCalledCount;
-			context.getSlotContext().iid = self.handleRequestMethodCalledCount;
-			// console.log('---> request iid: ' + this.handleRequestMethodCalledCount);
-			self.callStack.push(self.handleRequestMethodCalledCount);
-			done();	
-		}
+  public handleRequest(context: InvocationContext, done: Function): void {
+    const self: Logger = this;
+    this.debug(this.LOG_PREFIX + ' handleRequest: ' + this.getTargetFullName(context));
+    this.handleRequestMethodCalledCount++;
+    // let logCtx: any = context.slots.get(self.getName()).iid = self.handleRequestMethodCalledCount;
+    context.getSlotContext().iid = self.handleRequestMethodCalledCount;
+    // console.log('---> request iid: ' + this.handleRequestMethodCalledCount);
+    self.callStack.push(self.handleRequestMethodCalledCount);
+    done();
+  }
 
-		public handleResponse(context: InvocationContext, done: Function): void {
-			const self: Logger = this; 
-			this.debug(this.LOG_PREFIX + ' handleResponse: '+ this.getTargetFullName(context));
-			this.handleResponseMethodCalledCount ++;
-			// console.log('<--- response iid: ' + context.slots.get(self.getName()).iid);
-			let iidInCS: number  = self.callStack.pop();
+  public handleResponse(context: InvocationContext, done: Function): void {
+    const self: Logger = this;
+    this.debug(this.LOG_PREFIX + ' handleResponse: ' + this.getTargetFullName(context));
+    this.handleResponseMethodCalledCount++;
+    // console.log('<--- response iid: ' + context.slots.get(self.getName()).iid);
+    let iidInCS: number = self.callStack.pop();
 
-			if (iidInCS !== context.getSlotContext().iid) {
-		    throw new Error('Mismatched callstack, actual: ' +  iidInCS + ', but expected: ' + context.getSlotContext().iid);	
-			}
-			done();	
-		}
+    if (iidInCS !== context.getSlotContext().iid) {
+      throw new Error('Mismatched callstack, actual: ' + iidInCS + ', but expected: ' + context.getSlotContext().iid);
+    }
+    done();
+  }
 
-		public handleFault(context: InvocationContext, done: Function): void {
-			const self: Logger = this; 
-			this.debug(this.LOG_PREFIX + ' handleFault: '+ this.getTargetFullName(context));
-			this.handleFaultMethodCalledCount ++;
-			// console.log('<--- fault iid: ' + context.slots.get(self.getName()).iid);
-			let iidInCS: number  = self.callStack.pop();
+  public handleFault(context: InvocationContext, done: Function): void {
+    const self: Logger = this;
+    this.debug(this.LOG_PREFIX + ' handleFault: ' + this.getTargetFullName(context));
+    this.handleFaultMethodCalledCount++;
+    // console.log('<--- fault iid: ' + context.slots.get(self.getName()).iid);
+    let iidInCS: number = self.callStack.pop();
 
-			if (iidInCS !== context.getSlotContext().iid) {
-		    throw new Error('Mismatched callstack, actual: ' +  iidInCS + ', but expected: ' + context.getSlotContext().iid);	
-			}
-			done();	
-		}
+    if (iidInCS !== context.getSlotContext().iid) {
+      throw new Error('Mismatched callstack, actual: ' + iidInCS + ', but expected: ' + context.getSlotContext().iid);
+    }
+    done();
+  }
 
-		public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
-			callback(null, true);	
-		}
+  public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
+    callback(null, true);
+  }
 
-		public getName(): string {
-			return 'Logger';	
-		}
+  public getName(): string {
+    return 'Logger';
+  }
 
-		public reset(): void {
-	    this.initMethodCalledCount = 0;
-			this.handleRequestMethodCalledCount = 0;
-			this.handleResponseMethodCalledCount = 0;
-			this.handleFaultMethodCalledCount = 0;
-		}
-	}
-	
-	@Interceptor({
-		"interactionStyle": InteractionStyleType.ASYNC
-	})
-	class AsyncLogger extends interceptor.AbstractInterceptor{
-		private LOG_PREFIX: string = '[Logger] ';
-		private debug:Debug.IDebugger = Debug('proxify:Logger');
+  public reset(): void {
+    this.initMethodCalledCount = 0;
+    this.handleRequestMethodCalledCount = 0;
+    this.handleResponseMethodCalledCount = 0;
+    this.handleFaultMethodCalledCount = 0;
+  }
+}
 
-		public initMethodCalledCount: number = 0;
-		public handleRequestMethodCalledCount: number = 0;
-		public handleResponseMethodCalledCount: number = 0;
-		public handleFaultMethodCalledCount: number = 0;
+@Interceptor({
+  interactionStyle: InteractionStyleType.ASYNC,
+})
+class AsyncLogger extends interceptor.AbstractInterceptor {
+  private LOG_PREFIX: string = '[Logger] ';
+  private debug: Debug.IDebugger = Debug('proxify:Logger');
 
-		constructor(config: any) {
-			super(config);	
-		}
+  public initMethodCalledCount: number = 0;
+  public handleRequestMethodCalledCount: number = 0;
+  public handleResponseMethodCalledCount: number = 0;
+  public handleFaultMethodCalledCount: number = 0;
 
-		private getTargetFullName (context: InvocationContext): string {
-			let targetFullName = context.__interaction__.omd.__className__ + '.' + context.__interaction__.omd.__operationName__;
+  constructor(config: any) {
+    super(config);
+  }
 
-			return targetFullName;
-		}
+  private getTargetFullName(context: InvocationContext): string {
+    let targetFullName =
+      context.__interaction__.omd.__className__ + '.' + context.__interaction__.omd.__operationName__;
 
-		public init (context: InvocationContext, done: Function): void {
-			const self: AsyncLogger = this;
-			Q().then(function() {
-				self.debug(self.LOG_PREFIX + ' init');
-				self.initMethodCalledCount ++;
-				done();
-			});
-		}
+    return targetFullName;
+  }
 
-		public handleRequest(context: InvocationContext, done: Function): void {
-			const self: AsyncLogger = this;
-			Q().then(function() {
-				self.debug(self.LOG_PREFIX + ' handleRequest: ' + self.getTargetFullName(context));
-				self.handleRequestMethodCalledCount ++;
-				done();	
-			});
-		}
+  public init(context: InvocationContext, done: Function): void {
+    const self: AsyncLogger = this;
+    Q().then(function() {
+      self.debug(self.LOG_PREFIX + ' init');
+      self.initMethodCalledCount++;
+      done();
+    });
+  }
 
-		public handleResponse(context: InvocationContext, done: Function): void {
-			const self: AsyncLogger = this;
-			Q().then(function() {
-				self.debug(self.LOG_PREFIX + ' handleResponse: '+ self.getTargetFullName(context));
-				self.handleResponseMethodCalledCount ++;
-				done();	
-			});
-		}
+  public handleRequest(context: InvocationContext, done: Function): void {
+    const self: AsyncLogger = this;
+    Q().then(function() {
+      self.debug(self.LOG_PREFIX + ' handleRequest: ' + self.getTargetFullName(context));
+      self.handleRequestMethodCalledCount++;
+      done();
+    });
+  }
 
-		public handleFault(context: InvocationContext, done: Function): void {
-			const self: AsyncLogger = this;
-			Q().then(function() {
-				self.debug(self.LOG_PREFIX + ' handleFault: '+ self.getTargetFullName(context));
-				self.handleFaultMethodCalledCount ++;
-			done();	
-			});
-		}
+  public handleResponse(context: InvocationContext, done: Function): void {
+    const self: AsyncLogger = this;
+    Q().then(function() {
+      self.debug(self.LOG_PREFIX + ' handleResponse: ' + self.getTargetFullName(context));
+      self.handleResponseMethodCalledCount++;
+      done();
+    });
+  }
 
-		public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
-			const self: AsyncLogger = this;
-			Q().then(function() {
-				callback(null, true);	
-			});
-		}
+  public handleFault(context: InvocationContext, done: Function): void {
+    const self: AsyncLogger = this;
+    Q().then(function() {
+      self.debug(self.LOG_PREFIX + ' handleFault: ' + self.getTargetFullName(context));
+      self.handleFaultMethodCalledCount++;
+      done();
+    });
+  }
 
-		public getName(): string {
-			return 'AsyncLogger';	
-		}
+  public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
+    const self: AsyncLogger = this;
+    Q().then(function() {
+      callback(null, true);
+    });
+  }
 
-		public reset(): void {
-	    this.initMethodCalledCount = 0;
-			this.handleRequestMethodCalledCount = 0;
-			this.handleResponseMethodCalledCount = 0;
-			this.handleFaultMethodCalledCount = 0;
-		}
-	}
+  public getName(): string {
+    return 'AsyncLogger';
+  }
 
-	const logger = new Logger({});
-	const asyncLogger = new AsyncLogger({});
+  public reset(): void {
+    this.initMethodCalledCount = 0;
+    this.handleRequestMethodCalledCount = 0;
+    this.handleResponseMethodCalledCount = 0;
+    this.handleFaultMethodCalledCount = 0;
+  }
+}
 
-	const DELAY_EXECUTION_TIME = 100;
+const logger = new Logger({});
+const asyncLogger = new AsyncLogger({});
 
-	@Component({
-		"componentName": 'StockService',
-	})
-	class StockService {
-		private stocks: any[] = [];
-		public servedCount: number = 0;
-		protected scope:any = null; 
+const DELAY_EXECUTION_TIME = 100;
 
-		public isCallbackCalled: boolean = false;
+@Component({
+  componentName: 'StockService',
+})
+class StockService {
+  private stocks: any[] = [];
+  public servedCount: number = 0;
+  protected scope: any = null;
 
-		constructor(name: string, price: number) {
-			if ( ! name) return this;
-			this.stocks.push({
-				name: name,
-				price: price
-			});	
-		}
+  public isCallbackCalled: boolean = false;
 
-		@InteractionStyle(InteractionStyleType.SYNC)
-		@QoS({ singleton: logger})
-		static getUnit(): string {
-			return '$';	
-		}
+  constructor(name: string, price: number) {
+    if (!name) return this;
+    this.stocks.push({
+      name: name,
+      price: price,
+    });
+  }
 
-		@InteractionStyle(InteractionStyleType.SYNC)
-		@QoS({ singleton: logger})
-		getPrice(name: string): number {
-			// console.log('[getPrice]', name);
+  @InteractionStyle(InteractionStyleType.SYNC)
+  @QoS({ singleton: logger })
+  static getUnit(): string {
+    return '$';
+  }
 
-			var reval = null;
-			this.stocks.some(function(stock) {
-				if (name === stock.name) {
-					reval = stock;
-					return true;
-				}	
-			});
-			return reval.price;	
-		}
-		
-		@InteractionStyle(InteractionStyleType.ASYNC)
-		@QoS({ singleton: logger})
-		getPriceAsync(name: string): Q.Promise<number> {
-			const self: StockService =  this;
-			let deferred: Q.Deferred<any> = Q.defer<any>();
-			setTimeout(function() {
-				var reval = null;
-				self.stocks.some(function(stock) {
-					if (name === stock.name) {
-						reval = stock;
-						return true;
-					}	
-				});
-				deferred.resolve(reval.price);
-			}, DELAY_EXECUTION_TIME);
-			return deferred.promise;
-		}
-		
-		@InteractionStyle(InteractionStyleType.ASYNC)
-		@QoS({ singleton: asyncLogger})
-		getPriceAsyncWithAsyncInterceptor(name: string): Q.Promise<number> {
-			const self: StockService =  this;
-			let deferred: Q.Deferred<any> = Q.defer<any>();
-			setTimeout(function() {
-				var reval = null;
-				self.stocks.some(function(stock) {
-					if (name === stock.name) {
-						reval = stock;
-						return true;
-					}	
-				});
-				deferred.resolve(reval.price);
-			}, DELAY_EXECUTION_TIME);
-			return deferred.promise;
-		}
-		
-		@InteractionStyle(InteractionStyleType.ASYNC)
-		@QoS({ singleton: logger})
-		getPriceAsyncCallback(name: string, @Completion cb: (error: any, result: number) => void): void{
-			const self: StockService =  this;
-			setTimeout(function() {
-				// console.log('[getPriceAsyncCallback]', name);
-				var reval = null;
-				self.stocks.some(function(stock) {
-					if (name === stock.name) {
-						reval = stock;
-						return true;
-					}	
-				});
-				cb(null, reval);
-			}, DELAY_EXECUTION_TIME);
-		}
-		
-		@InteractionStyle(InteractionStyleType.ASYNC)
-		@QoS({ singleton: asyncLogger})
-		getPriceAsyncCallbackWithAsyncInterceptor(name: string, @Completion cb: (error: any, result: number) => void): void{
-			const self: StockService =  this;
-			setTimeout(function() {
-				// console.log('[getPriceAsyncCallback]', name);
-				var reval = null;
-				self.stocks.some(function(stock) {
-					if (name === stock.name) {
-						reval = stock;
-						return true;
-					}	
-				});
-				cb(null, reval);
-			}, DELAY_EXECUTION_TIME);
-		}
+  @InteractionStyle(InteractionStyleType.SYNC)
+  @QoS({ singleton: logger })
+  getPrice(name: string): number {
+    // console.log('[getPrice]', name);
 
-		@InteractionStyle(InteractionStyleType.SYNC)
-		@QoS({ singleton: logger})
-		setPrice(name: string, price: number): void {
-			// console.log('[setPrice]', name, price);
-			this.stocks.push({
-				name: name,
-				price: price
-			});	
-		}
+    var reval = null;
+    this.stocks.some(function(stock) {
+      if (name === stock.name) {
+        reval = stock;
+        return true;
+      }
+    });
+    return reval.price;
+  }
 
-		@InteractionStyle(InteractionStyleType.SYNC)
-		@QoS({ singleton: logger})
-		printPrice(name: string, @Completion cb: (error: any, result: number) => void): void {
-			// console.log('[printPrice]: ', name);
-			var reval = null;
-			this.stocks.some(function(stock) {
-				if (name === stock.name) {
-					reval = stock;
-					return true;
-				}	
-			});
+  @InteractionStyle(InteractionStyleType.ASYNC)
+  @QoS({ singleton: logger })
+  getPriceAsync(name: string): Q.Promise<number> {
+    const self: StockService = this;
+    let deferred: Q.Deferred<any> = Q.defer<any>();
+    setTimeout(function() {
+      var reval = null;
+      self.stocks.some(function(stock) {
+        if (name === stock.name) {
+          reval = stock;
+          return true;
+        }
+      });
+      deferred.resolve(reval.price);
+    }, DELAY_EXECUTION_TIME);
+    return deferred.promise;
+  }
 
-			// add test point for proxy instance toString() testing
-			// Per JS spec, TypeError will be thrown on a proxy toString()
-			// we need additional handling on this to return a valid function string.
-			let cbString = cb.toString();
-			cb(null, reval);
-		}
+  @InteractionStyle(InteractionStyleType.ASYNC)
+  @QoS({ singleton: asyncLogger })
+  getPriceAsyncWithAsyncInterceptor(name: string): Q.Promise<number> {
+    const self: StockService = this;
+    let deferred: Q.Deferred<any> = Q.defer<any>();
+    setTimeout(function() {
+      var reval = null;
+      self.stocks.some(function(stock) {
+        if (name === stock.name) {
+          reval = stock;
+          return true;
+        }
+      });
+      deferred.resolve(reval.price);
+    }, DELAY_EXECUTION_TIME);
+    return deferred.promise;
+  }
 
-		@Callback
-		print(@Fault error: any, @Output result: number): void {
-			if (error) {
-				console.error('Error occurs in callback method, due to: ', error);
-				return;
-			}	
-			this.isCallbackCalled = true;
-			// console.log('[Printer]:', result);
-		}	
+  @InteractionStyle(InteractionStyleType.ASYNC)
+  @QoS({ singleton: logger })
+  getPriceAsyncCallback(name: string, @Completion cb: (error: any, result: number) => void): void {
+    const self: StockService = this;
+    setTimeout(function() {
+      // console.log('[getPriceAsyncCallback]', name);
+      var reval = null;
+      self.stocks.some(function(stock) {
+        if (name === stock.name) {
+          reval = stock;
+          return true;
+        }
+      });
+      cb(null, reval);
+    }, DELAY_EXECUTION_TIME);
+  }
 
-		public reset(): void {
-	    this.isCallbackCalled = false;	
-		}
-	}
+  @InteractionStyle(InteractionStyleType.ASYNC)
+  @QoS({ singleton: asyncLogger })
+  getPriceAsyncCallbackWithAsyncInterceptor(name: string, @Completion cb: (error: any, result: number) => void): void {
+    const self: StockService = this;
+    setTimeout(function() {
+      // console.log('[getPriceAsyncCallback]', name);
+      var reval = null;
+      self.stocks.some(function(stock) {
+        if (name === stock.name) {
+          reval = stock;
+          return true;
+        }
+      });
+      cb(null, reval);
+    }, DELAY_EXECUTION_TIME);
+  }
 
-	const MAX_NESTED_STACK_DEPTH = 160;
+  @InteractionStyle(InteractionStyleType.SYNC)
+  @QoS({ singleton: logger })
+  setPrice(name: string, price: number): void {
+    // console.log('[setPrice]', name, price);
+    this.stocks.push({
+      name: name,
+      price: price,
+    });
+  }
 
-	@Component({
-		"componentName": 'NestedInvocation',
-	})
-	class NestedInvocation {
-		public callbackMethodCalledCount: number = 0;
-		public stackDepth: number = 0;
+  @InteractionStyle(InteractionStyleType.SYNC)
+  @QoS({ singleton: logger })
+  printPrice(name: string, @Completion cb: (error: any, result: number) => void): void {
+    // console.log('[printPrice]: ', name);
+    var reval = null;
+    this.stocks.some(function(stock) {
+      if (name === stock.name) {
+        reval = stock;
+        return true;
+      }
+    });
 
-		invoke(): void {
-			// console.log('this.nestInvoke isComponentManagedProp? :', this.nestInvoke[isComponentManagedProp]);
-			this.nestInvoke('nested-tester', this.callback.bind(this));
-		}
+    // add test point for proxy instance toString() testing
+    // Per JS spec, TypeError will be thrown on a proxy toString()
+    // we need additional handling on this to return a valid function string.
+    let cbString = cb.toString();
+    cb(null, reval);
+  }
 
-		@InteractionStyle(InteractionStyleType.SYNC)
-		@QoS({ singleton: logger})
-		nestInvoke(name: string, @Completion cb: (error: any, result: string) => void): void {
-			const self: NestedInvocation = this;
+  @Callback
+  print(@Fault error: any, @Output result: number): void {
+    if (error) {
+      console.error('Error occurs in callback method, due to: ', error);
+      return;
+    }
+    this.isCallbackCalled = true;
+    // console.log('[Printer]:', result);
+  }
 
-			// console.log('isCallbackWrappedCallback? :', cb[isCallbackWrappedProp]);
-			// console.log('self.nestInvoke isComponentManagedProp? :', self.nestInvoke[isComponentManagedProp]);
-			self.stackDepth ++;
-			if (self.stackDepth === MAX_NESTED_STACK_DEPTH) {
-				cb(null, 'OK');
-			} else {
-		    self.nestInvoke(name, cb);
-			}
-		}
+  public reset(): void {
+    this.isCallbackCalled = false;
+  }
+}
 
-		public reset(): void {
-		  this.callbackMethodCalledCount = 0;
-			this.stackDepth = 0;
-		}
-		
-		@Callback
-		callback(@Fault error: any, @Output result: string): void {
-			if (error) {
-				console.error('Error occurs in callback method, due to: ', error);
-				return;
-			}	
-			this.callbackMethodCalledCount ++;
-		}	
+const MAX_NESTED_STACK_DEPTH = 160;
 
-		fnEquals(nestInvokeFn: Function): boolean {
-	
-			if (this.nestInvoke === nestInvokeFn) {
-		    return true;	
-			}
+@Component({
+  componentName: 'NestedInvocation',
+})
+class NestedInvocation {
+  public callbackMethodCalledCount: number = 0;
+  public stackDepth: number = 0;
 
-			return false;
-		}
+  invoke(): void {
+    // console.log('this.nestInvoke isComponentManagedProp? :', this.nestInvoke[isComponentManagedProp]);
+    this.nestInvoke('nested-tester', this.callback.bind(this));
+  }
 
-		equals(o: NestedInvocation): boolean {
-	    if (this === o) {
-		    return true;	
-			}	
-			return false;
-		}
-	}
-	
-  @Component({
-		"componentName": 'MismatchedInteraction',
-	})
-	class MismatchedInteraction {
+  @InteractionStyle(InteractionStyleType.SYNC)
+  @QoS({ singleton: logger })
+  nestInvoke(name: string, @Completion cb: (error: any, result: string) => void): void {
+    const self: NestedInvocation = this;
 
-		@InteractionStyle(InteractionStyleType.SYNC)
-		@QoS({ singleton: asyncLogger})
-		greet(name: string): string {
-			return "Hello, " + name;
-		}
-		
-		@InteractionStyle(InteractionStyleType.SYNC)
-		@QoS({ singleton: logger})
-		@QoS({ singleton: logger})
-		hi(name: string): string {
-			return "Hello, " + name;
-		}
-	}
+    // console.log('isCallbackWrappedCallback? :', cb[isCallbackWrappedProp]);
+    // console.log('self.nestInvoke isComponentManagedProp? :', self.nestInvoke[isComponentManagedProp]);
+    self.stackDepth++;
+    if (self.stackDepth === MAX_NESTED_STACK_DEPTH) {
+      cb(null, 'OK');
+    } else {
+      self.nestInvoke(name, cb);
+    }
+  }
+
+  public reset(): void {
+    this.callbackMethodCalledCount = 0;
+    this.stackDepth = 0;
+  }
+
+  @Callback
+  callback(@Fault error: any, @Output result: string): void {
+    if (error) {
+      console.error('Error occurs in callback method, due to: ', error);
+      return;
+    }
+    this.callbackMethodCalledCount++;
+  }
+
+  fnEquals(nestInvokeFn: Function): boolean {
+    if (this.nestInvoke === nestInvokeFn) {
+      return true;
+    }
+
+    return false;
+  }
+
+  equals(o: NestedInvocation): boolean {
+    if (this === o) {
+      return true;
+    }
+    return false;
+  }
+}
+
+@Component({
+  componentName: 'MismatchedInteraction',
+})
+class MismatchedInteraction {
+  @InteractionStyle(InteractionStyleType.SYNC)
+  @QoS({ singleton: asyncLogger })
+  greet(name: string): string {
+    return 'Hello, ' + name;
+  }
+
+  @InteractionStyle(InteractionStyleType.SYNC)
+  @QoS({ singleton: logger })
+  @QoS({ singleton: logger })
+  hi(name: string): string {
+    return 'Hello, ' + name;
+  }
+}
 
 //=================================================
 //   Interceptor Registry Function Test
 //=================================================
 
 describe('@Interceptor Tests', function() {
-
-	it('Register Interceptor Class/Metadata Via Decorator', function() {
-		let creator: Function = interceptor.interceptorRegistry.getInterceptorClass(FooInterceptor.name);	
-		expect(creator.name).to.equal(FooInterceptor.name);
-		creator = interceptor.interceptorRegistry.getInterceptorClass(BarInterceptor.name);
-		expect(creator.name).to.equal(BarInterceptor.name);
-		expect(creator[INTERCEPTOR_METADATA_SLOT].interactionStyle).to.equal(InteractionStyleType.SYNC);
-		creator = interceptor.interceptorRegistry.getInterceptorClass(BarInterceptorWithoutDecorator.name);
-		expect(creator).to.equal(null);
-	});
+  it('Register Interceptor Class/Metadata Via Decorator', function() {
+    let creator: Function = interceptor.interceptorRegistry.getInterceptorClass(FooInterceptor.name);
+    expect(creator.name).to.equal(FooInterceptor.name);
+    creator = interceptor.interceptorRegistry.getInterceptorClass(BarInterceptor.name);
+    expect(creator.name).to.equal(BarInterceptor.name);
+    expect(creator[INTERCEPTOR_METADATA_SLOT].interactionStyle).to.equal(InteractionStyleType.SYNC);
+    creator = interceptor.interceptorRegistry.getInterceptorClass(BarInterceptorWithoutDecorator.name);
+    expect(creator).to.equal(null);
+  });
 });
 
 //=================================================
@@ -706,180 +705,179 @@ describe('@Interceptor Tests', function() {
 //=================================================
 
 describe('@Component, @QoS, @Completion, @Callback Basic Function Tests', function() {
+  it('Reflect to create an interceptor instance', function() {
+    let iFn: Function = LoggingInterceptor;
+    let initParams = [];
 
-	it('Reflect to create an interceptor instance', function() {
-		let iFn: Function = LoggingInterceptor;
-		let initParams = [];
+    expect(iFn.name).to.equal('LoggingInterceptor');
+    let i: interceptor.AbstractInterceptor = Reflect.construct(iFn, initParams);
+    expect(i instanceof interceptor.AbstractInterceptor).to.equal(true);
+    expect(i instanceof Processor).to.equal(true);
+    expect(i.getName()).to.equal('LoggingInterceptor');
+  });
 
-		expect(iFn.name).to.equal('LoggingInterceptor');
-		let i: interceptor.AbstractInterceptor = Reflect.construct(iFn, initParams);
-		expect(i instanceof interceptor.AbstractInterceptor).to.equal(true);
-		expect(i instanceof Processor).to.equal(true);
-		expect(i.getName()).to.equal('LoggingInterceptor');
-	});
+  it('Instanceof Operator Tests on the Class without Proxify Decorator', function() {
+    let foo: Foo = new Foo();
+    expect(foo instanceof Foo).to.equal(true);
+    expect(foo instanceof Stock).to.equal(false);
+  });
 
-	it('Instanceof Operator Tests on the Class without Proxify Decorator', function() {
-		let foo: Foo = new Foo();
-		expect(foo instanceof Foo).to.equal(true);
-		expect(foo instanceof Stock).to.equal(false);
-	});
+  it('Instanceof Operator Tests on the Class with Proxify Decorator', function() {
+    let foo: USStock = new USStock('IBM', 100);
+    expect(foo instanceof Stock).to.equal(true);
+  });
 
-	it('Instanceof Operator Tests on the Class with Proxify Decorator', function() {
-		let foo: USStock = new USStock('IBM', 100);
-		expect(foo instanceof Stock).to.equal(true);
-	});
+  it('Class Without Proxify decorator should not be wrapped by Proxy', function() {
+    expect(Stock[isComponentManagedProp]).to.equal(undefined);
+  });
 
-	it('Class Without Proxify decorator should not be wrapped by Proxy', function() {
-		expect(Stock[isComponentManagedProp]).to.equal(undefined);
-	});
+  it('Class With @Component should be wrapped by Proxy', function() {
+    expect(HKStock[isComponentManagedProp]).to.equal(true);
+    expect(USStock[isComponentManagedProp]).to.equal(true);
+  });
 
-	it('Class With @Component should be wrapped by Proxy', function() {
-		expect(HKStock[isComponentManagedProp]).to.equal(true);
-		expect(USStock[isComponentManagedProp]).to.equal(true);
-	});
+  it('Typeof operation on the Class With @Component should be wrapped by Proxy', function() {
+    expect(typeof HKStock).to.equal('function');
+    expect(typeof USStock).to.equal('function');
+  });
 
-	it('Typeof operation on the Class With @Component should be wrapped by Proxy', function() {
-		expect(typeof HKStock).to.equal('function');
-		expect(typeof USStock).to.equal('function');
-	});
+  it('Instanceof operation on the Class With @Component should be wrapped by Proxy', function() {
+    expect(HKStock instanceof Function).to.equal(true);
+    expect(USStock instanceof Function).to.equal(true);
+    expect(Stock instanceof Function).to.equal(true);
+  });
 
-	it('Instanceof operation on the Class With @Component should be wrapped by Proxy', function() {
-		expect(HKStock instanceof Function).to.equal(true);
-		expect(USStock instanceof Function).to.equal(true);
-		expect(Stock instanceof Function).to.equal(true);
-	});
+  it('Object instance created by Wrapped Class should also be wrapped by Proxy', function() {
+    let stock: USStock = new USStock('IBM', 100);
+    expect(stock[isComponentManagedProp]).to.equal(true);
+  });
 
-	it('Object instance created by Wrapped Class should also be wrapped by Proxy', function() {
-		let stock: USStock = new USStock('IBM', 100);
-		expect(stock[isComponentManagedProp]).to.equal(true);
-	});
+  it('Typeof operator on object instance which created by Wrapped Class', function() {
+    let stock: USStock = new USStock('IBM', 100);
+    expect(typeof stock).to.equal('object');
+  });
 
-	it('Typeof operator on object instance which created by Wrapped Class', function() {
-		let stock: USStock = new USStock('IBM', 100);
-		expect(typeof stock).to.equal('object');
-	});
+  it('Instanceof operator should work on wrapped object which is created by wrapped class', function() {
+    let stock: HKStock = new HKStock('Tecent', 200);
+    expect(stock instanceof Object).to.equal(true);
+    expect(stock instanceof HKStock).to.equal(true);
+    expect(stock instanceof Stock).to.equal(true);
+    expect(stock instanceof USStock).to.equal(false);
+    expect(stock instanceof Foo).to.equal(false);
+  });
 
-	it('Instanceof operator should work on wrapped object which is created by wrapped class', function() {
-		let stock: HKStock = new HKStock('Tecent', 200);
-		expect(stock instanceof Object).to.equal(true);
-		expect(stock instanceof HKStock).to.equal(true);
-		expect(stock instanceof Stock).to.equal(true);
-		expect(stock instanceof USStock).to.equal(false);
-		expect(stock instanceof Foo).to.equal(false);
-	});
+  it('Constructor property of object instance not equals to Proxied constuctor', function() {
+    let stock: USStock = new USStock('IBM', 100);
+    // the stock is created by original USStock class
+    // within decorator factory function, the USStock used out of
+    // decorator will point to the proxied one
+    expect(stock.constructor === USStock).to.equal(false);
+  });
 
-	it('Constructor property of object instance not equals to Proxied constuctor', function() {
-		let stock: USStock = new USStock('IBM', 100);
-		// the stock is created by original USStock class
-		// within decorator factory function, the USStock used out of
-		// decorator will point to the proxied one 
-		expect(stock.constructor === USStock).to.equal(false);
-	});
+  it('Proxied object __proto__ property equals to <proxied-constructor>.prorotype', function() {
+    let protoKey: string = '__proto__';
+    let stock: USStock = new USStock('IBM', 100);
+    // console.log('USStock.prototype:', USStock.prototype);
+    // console.log('stock.__proto__', stock[protoKey]);
+    expect(stock[protoKey] === USStock.prototype).to.equal(true);
+    expect(stock.constructor.prototype === USStock.prototype).to.equal(true);
+  });
 
-	it('Proxied object __proto__ property equals to <proxied-constructor>.prorotype', function() {
-		let protoKey: string = '__proto__';
-		let stock: USStock = new USStock('IBM', 100);
-		// console.log('USStock.prototype:', USStock.prototype);
-		// console.log('stock.__proto__', stock[protoKey]);
-		expect(stock[protoKey]=== USStock.prototype).to.equal(true);
-		expect(stock.constructor.prototype === USStock.prototype).to.equal(true);
-	});
+  it('Object instance method contains metadata attachment', function() {
+    let stock: USStock = new USStock('IBM', 100);
+    expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
+    expect(stock.getPrice[OPERATION_METADATA_SLOT].sizeOfQoS()).to.equal(2);
+  });
 
-	it('Object instance method contains metadata attachment', function() {
-		let stock: USStock = new USStock('IBM', 100);
-		expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
-		expect(stock.getPrice[OPERATION_METADATA_SLOT].sizeOfQoS()).to.equal(2);
-	});
+  it('Method which returned by bind() method contains metadata attachment', function() {
+    let stock: USStock = new USStock('IBM', 100);
+    expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
+    expect(stock.getPrice.bind(stock)[OPERATION_METADATA_SLOT] !== undefined).to.equal(true);
+  });
 
-	it('Method which returned by bind() method contains metadata attachment', function() {
-		let stock: USStock = new USStock('IBM', 100);
-		expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
-		expect(stock.getPrice.bind(stock)[OPERATION_METADATA_SLOT] !== undefined).to.equal(true);
-	});
+  it('@QoS on static method', function() {
+    expect(USStock.getVersion[isComponentManagedProp]).to.equal(true);
+    expect(USStock.getVersion[OPERATION_METADATA_SLOT].sizeOfQoS()).to.equal(2);
+  });
 
-	it('@QoS on static method', function() {
-		expect(USStock.getVersion[isComponentManagedProp]).to.equal(true);
-		expect(USStock.getVersion[OPERATION_METADATA_SLOT].sizeOfQoS()).to.equal(2);
-	});
+  it('Method without QoS decorator should NOT be wrapped by Proxy', function() {
+    let stock: USStock = new USStock('IBM', 100);
+    expect(stock.printPrice[isComponentManagedProp]).to.equal(undefined);
+  });
 
-	it('Method without QoS decorator should NOT be wrapped by Proxy', function() {
-		let stock: USStock = new USStock('IBM', 100);
-		expect(stock.printPrice[isComponentManagedProp]).to.equal(undefined);
-	});
+  it('@QoS wrapped proxy', function() {
+    let stock: USStock = new USStock('IBM', 100);
+    stock.getPrice('IBM', null);
+    expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
+  });
 
-	it('@QoS wrapped proxy', function() {
-		let stock: USStock = new USStock('IBM', 100);
-		stock.getPrice('IBM', null);
-		expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
-	});
+  it('@QoS on object method with bind()ed context', function() {
+    let stock: USStock = new USStock('IBM', 100);
+    let v: any = stock.getPrice('IBM', null);
+    expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
+    let getPriceFn: Function = stock.getPrice.bind(stock);
+    expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
+    expect(getPriceFn[isComponentManagedProp]).to.equal(true);
+    expect(v).to.equal(100);
+  });
 
-	it('@QoS on object method with bind()ed context', function() {
-		let stock: USStock = new USStock('IBM', 100);
-		let v: any = stock.getPrice('IBM', null);
-		expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
-		let getPriceFn: Function = stock.getPrice.bind(stock);
-		expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
-		expect(getPriceFn[isComponentManagedProp]).to.equal(true);
-		expect(v).to.equal(100);
-	});
+  it('@QoS on static method invocation', function() {
+    let v: string = USStock.getVersion(null);
+    expect(USStock.getVersion[isComponentManagedProp]).to.equal(true);
+    expect(v).to.equal('v1.0.0');
+  });
 
-	it('@QoS on static method invocation', function() {
-		let v: string = USStock.getVersion(null);
-		expect(USStock.getVersion[isComponentManagedProp]).to.equal(true);
-		expect(v).to.equal('v1.0.0');
-	});
+  it('@Fault decorator metadata test', function() {
+    let cb = new CBClass();
+    expect(cb.cb[CALLBACK_METADATA_SLOT].sizeOfFaultParams()).to.equal(1);
+    expect(cb.cb[CALLBACK_METADATA_SLOT].isFaultParam(0)).to.equal(true);
+  });
 
-	it('@Fault decorator metadata test', function() {
-		let cb = new CBClass();
-		expect(cb.cb[CALLBACK_METADATA_SLOT].sizeOfFaultParams()).to.equal(1);
-		expect(cb.cb[CALLBACK_METADATA_SLOT].isFaultParam(0)).to.equal(true);
-	});
+  it('@Output decorator metadata test', function() {
+    let cb = new CBClass();
+    expect(cb.cb[CALLBACK_METADATA_SLOT].sizeOfOutputParams()).to.equal(1);
+    expect(cb.cb[CALLBACK_METADATA_SLOT].isOutputParam(1)).to.equal(true);
+  });
 
-	it('@Output decorator metadata test', function() {
-		let cb = new CBClass();
-		expect(cb.cb[CALLBACK_METADATA_SLOT].sizeOfOutputParams()).to.equal(1);
-		expect(cb.cb[CALLBACK_METADATA_SLOT].isOutputParam(1)).to.equal(true);
-	});
+  it('@Completion on object method', function() {
+    let completion_fn_position = '__completion_fn_param_position__';
+    let stock: USStock = new USStock('IBM', 100);
+    expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
+    expect(stock.getPrice[OPERATION_METADATA_SLOT][completion_fn_position]).to.equal(1);
+    let cbobj = new CBClass();
+    let cbm = cbobj.cb;
+    stock.getPrice('IBM', cbm.bind(cbobj));
+    // stock.getPrice('IBM', cbm);
+    // console.log('>>>>', cbobj);
+    expect(cbobj.reval).to.equal(100);
+  });
 
-	it('@Completion on object method', function() {
-		let completion_fn_position = '__completion_fn_param_position__';
-		let stock: USStock = new USStock('IBM', 100);
-		expect(stock.getPrice[isComponentManagedProp]).to.equal(true);
-		expect(stock.getPrice[OPERATION_METADATA_SLOT][completion_fn_position]).to.equal(1);
-		let cbobj =  new CBClass();
-		let cbm = cbobj.cb;
-		stock.getPrice('IBM', cbm.bind(cbobj));
-		// stock.getPrice('IBM', cbm);
-		// console.log('>>>>', cbobj);
-		expect(cbobj.reval).to.equal(100);
-	});
+  it('@Completion on a static method', function() {
+    let completion_fn_position = '__completion_fn_param_position__';
+    expect(USStock.getVersion[isComponentManagedProp]).to.equal(true);
+    expect(USStock.getVersion[OPERATION_METADATA_SLOT][completion_fn_position]).to.equal(0);
+  });
 
-	it('@Completion on a static method', function() {
-		let completion_fn_position = '__completion_fn_param_position__';
-		expect(USStock.getVersion[isComponentManagedProp]).to.equal(true);
-		expect(USStock.getVersion[OPERATION_METADATA_SLOT][completion_fn_position]).to.equal(0);
-	});
+  it('@Completion decorator points to a static callback method', function() {
+    expect(USStock.getVersion[isComponentManagedProp]).to.equal(true);
 
-	it('@Completion decorator points to a static callback method', function() {
-		expect(USStock.getVersion[isComponentManagedProp]).to.equal(true);
+    let cbobj = new CBClass();
+    let cbm = cbobj.cb;
+    expect(cbm[CALLBACK_METADATA_SLOT].sizeOfOutputParams()).to.equal(1);
+    expect(cbm[CALLBACK_METADATA_SLOT].isOutputParam(1)).to.equal(true);
+    expect(cbm[CALLBACK_METADATA_SLOT].sizeOfFaultParams()).to.equal(1);
+    expect(cbm[CALLBACK_METADATA_SLOT].isFaultParam(0)).to.equal(true);
+    USStock.getVersion(cbm.bind(cbobj));
+    // USStock.getVersion(cbm);
+    // console.log('>>>>', cbobj);
+    expect(cbobj.reval).to.equal('v1.0.0');
+  });
 
-		let cbobj =  new CBClass();
-		let cbm = cbobj.cb;
-		expect(cbm[CALLBACK_METADATA_SLOT].sizeOfOutputParams()).to.equal(1);
-		expect(cbm[CALLBACK_METADATA_SLOT].isOutputParam(1)).to.equal(true);
-		expect(cbm[CALLBACK_METADATA_SLOT].sizeOfFaultParams()).to.equal(1);
-		expect(cbm[CALLBACK_METADATA_SLOT].isFaultParam(0)).to.equal(true);
-		USStock.getVersion(cbm.bind(cbobj));
-		// USStock.getVersion(cbm);
-		// console.log('>>>>', cbobj);
-		expect(cbobj.reval).to.equal('v1.0.0');
-	});
-	
-	it('Proxified method should be equals for <obj>.<fn> and this.<fn>', function() {
-		let ni: NestedInvocation = new NestedInvocation();
-		expect(true).to.equal(ni.equals(ni));
-		expect(true).to.equal(ni.fnEquals(ni.nestInvoke));
-	});
+  it('Proxified method should be equals for <obj>.<fn> and this.<fn>', function() {
+    let ni: NestedInvocation = new NestedInvocation();
+    expect(true).to.equal(ni.equals(ni));
+    expect(true).to.equal(ni.fnEquals(ni.nestInvoke));
+  });
 });
 
 //=================================================
@@ -887,162 +885,161 @@ describe('@Component, @QoS, @Completion, @Callback Basic Function Tests', functi
 //=================================================
 
 describe('Integration Tests', function() {
+  it('@QoS on static sync-return method with sync-interceptor', function() {
+    let ss: StockService = new StockService('IBM', 100);
+    logger.reset();
+    let unit: string = StockService.getUnit();
+    expect(unit).to.equal('$');
+    expect(logger.initMethodCalledCount).to.equal(1);
+    expect(logger.handleRequestMethodCalledCount).to.equal(1);
+    expect(logger.handleResponseMethodCalledCount).to.equal(1);
+  });
 
-	it('@QoS on static sync-return method with sync-interceptor', function() {
-		let ss: StockService = new StockService('IBM', 100);
-		logger.reset();
-		let unit: string = StockService.getUnit();
-		expect(unit).to.equal('$');
-		expect(logger.initMethodCalledCount).to.equal(1);
-		expect(logger.handleRequestMethodCalledCount).to.equal(1);
-		expect(logger.handleResponseMethodCalledCount).to.equal(1);
-	});
+  it('@QoS on sync-return method with sync-interceptor', function() {
+    let ss: StockService = new StockService('IBM', 100);
+    logger.reset();
+    let price: number = ss.getPrice('IBM');
+    expect(price).to.equal(100);
+    expect(logger.initMethodCalledCount).to.equal(1);
+    expect(logger.handleRequestMethodCalledCount).to.equal(1);
+    expect(logger.handleResponseMethodCalledCount).to.equal(1);
+  });
 
-	it('@QoS on sync-return method with sync-interceptor', function() {
-		let ss: StockService = new StockService('IBM', 100);
-		logger.reset();
-		let price: number = ss.getPrice('IBM');
-		expect(price).to.equal(100);
-		expect(logger.initMethodCalledCount).to.equal(1);
-		expect(logger.handleRequestMethodCalledCount).to.equal(1);
-		expect(logger.handleResponseMethodCalledCount).to.equal(1);
-	});
-	
-	it('@QoS on sync-callback method with sync-interceptor', function() {
-		let ss: StockService = new StockService('IBM', 100);
-		logger.reset();
-		ss.reset();
-		ss.printPrice('IBM', ss.print.bind(ss));
-		expect(ss.isCallbackCalled).to.equal(true);
-		expect(logger.initMethodCalledCount).to.equal(1);
-		expect(logger.handleRequestMethodCalledCount).to.equal(1);
-		expect(logger.handleResponseMethodCalledCount).to.equal(1);
-	});
-	
-	it('@QoS on async-promise method with sync-interceptor', function() {
-		let ss: StockService = new StockService('IBM', 100);
-		logger.reset();
-		ss.reset();
-		let promsie: Q.Promise<number> = ss.getPriceAsync('IBM');
-		// console.log('--> Waiting for promise resolved');
-		return promsie.then(function(price) {
-			expect(price).to.equal(100);
-			expect(logger.initMethodCalledCount).to.equal(1);
-			expect(logger.handleRequestMethodCalledCount).to.equal(1);
-			expect(logger.handleResponseMethodCalledCount).to.equal(1);
-		});
-	});
-	
-	it('@QoS on async-promise method with async-interceptor', function() {
-		let ss: StockService = new StockService('IBM', 100);
-		asyncLogger.reset();
-		ss.reset();
-		let promsie: Q.Promise<number> = ss.getPriceAsyncWithAsyncInterceptor('IBM');
-		// console.log('--> Waiting for promise resolved');
-		return promsie.then(function(price) {
-			expect(price).to.equal(100);
-			expect(asyncLogger.initMethodCalledCount).to.equal(1);
-			expect(asyncLogger.handleRequestMethodCalledCount).to.equal(1);
-			expect(asyncLogger.handleResponseMethodCalledCount).to.equal(1);
-		});
-	});
-	
-	it('@QoS on async-callback method with sync-interceptor', function() {
-		let ss: StockService = new StockService('IBM', 100);
-		logger.reset();
-		ss.reset();
-		let isCallbackCalled: boolean = false;
-		let deferred: Q.Deferred<any> = Q.defer<any>();
+  it('@QoS on sync-callback method with sync-interceptor', function() {
+    let ss: StockService = new StockService('IBM', 100);
+    logger.reset();
+    ss.reset();
+    ss.printPrice('IBM', ss.print.bind(ss));
+    expect(ss.isCallbackCalled).to.equal(true);
+    expect(logger.initMethodCalledCount).to.equal(1);
+    expect(logger.handleRequestMethodCalledCount).to.equal(1);
+    expect(logger.handleResponseMethodCalledCount).to.equal(1);
+  });
 
-		ss.getPriceAsyncCallback('IBM', function(error: any, result: number) {
-			isCallbackCalled = true;
-			deferred.resolve();
-		});
+  it('@QoS on async-promise method with sync-interceptor', function() {
+    let ss: StockService = new StockService('IBM', 100);
+    logger.reset();
+    ss.reset();
+    let promsie: Q.Promise<number> = ss.getPriceAsync('IBM');
+    // console.log('--> Waiting for promise resolved');
+    return promsie.then(function(price) {
+      expect(price).to.equal(100);
+      expect(logger.initMethodCalledCount).to.equal(1);
+      expect(logger.handleRequestMethodCalledCount).to.equal(1);
+      expect(logger.handleResponseMethodCalledCount).to.equal(1);
+    });
+  });
 
-		return deferred.promise.then(function() {
-			expect(isCallbackCalled).to.equal(true);
-			expect(logger.initMethodCalledCount).to.equal(1);
-			expect(logger.handleRequestMethodCalledCount).to.equal(1);
-			expect(logger.handleResponseMethodCalledCount).to.equal(1);
-			// console.log('---> asset done');
-		});
-	});
-	
-	it('@QoS on async-callback method with async-interceptor', function() {
-		let ss: StockService = new StockService('IBM', 100);
-		asyncLogger.reset();
-		ss.reset();
-		let isCallbackCalled: boolean = false;
-		let deferred: Q.Deferred<any> = Q.defer<any>();
+  it('@QoS on async-promise method with async-interceptor', function() {
+    let ss: StockService = new StockService('IBM', 100);
+    asyncLogger.reset();
+    ss.reset();
+    let promsie: Q.Promise<number> = ss.getPriceAsyncWithAsyncInterceptor('IBM');
+    // console.log('--> Waiting for promise resolved');
+    return promsie.then(function(price) {
+      expect(price).to.equal(100);
+      expect(asyncLogger.initMethodCalledCount).to.equal(1);
+      expect(asyncLogger.handleRequestMethodCalledCount).to.equal(1);
+      expect(asyncLogger.handleResponseMethodCalledCount).to.equal(1);
+    });
+  });
 
-		ss.getPriceAsyncCallbackWithAsyncInterceptor('IBM', function(error: any, result: number) {
-			isCallbackCalled = true;
+  it('@QoS on async-callback method with sync-interceptor', function() {
+    let ss: StockService = new StockService('IBM', 100);
+    logger.reset();
+    ss.reset();
+    let isCallbackCalled: boolean = false;
+    let deferred: Q.Deferred<any> = Q.defer<any>();
 
-			// wait for invocation completion
-			setTimeout(function() {
-				deferred.resolve();
-			}, DELAY_EXECUTION_TIME + 50);
-		});
+    ss.getPriceAsyncCallback('IBM', function(error: any, result: number) {
+      isCallbackCalled = true;
+      deferred.resolve();
+    });
 
-		return deferred.promise.then(function() {
-			expect(isCallbackCalled).to.equal(true);
-			expect(asyncLogger.initMethodCalledCount).to.equal(1);
-			expect(asyncLogger.handleRequestMethodCalledCount).to.equal(1);
-			expect(asyncLogger.handleResponseMethodCalledCount).to.equal(1);
-			// console.log('---> asset done');
-		});
-	});
-	
-	it('@QoS on sync-callback method which being invoked recursively with a pass-through callback function handler', function() {
-		let ni: NestedInvocation = new NestedInvocation();
-		logger.reset();
-		ni.reset();
-		// expect(true).to.equal(ni.equals(ni));
-		// expect(true).to.equal(ni.fnEquals(ni.nestInvoke));
-		ni.nestInvoke('nested-tester', ni.callback.bind(ni));
-		expect(ni.callbackMethodCalledCount).to.equal(1);
-		expect(logger.initMethodCalledCount).to.equal(MAX_NESTED_STACK_DEPTH);
-		expect(logger.handleRequestMethodCalledCount).to.equal(MAX_NESTED_STACK_DEPTH);
-		expect(logger.handleResponseMethodCalledCount).to.equal(MAX_NESTED_STACK_DEPTH);
-	});
+    return deferred.promise.then(function() {
+      expect(isCallbackCalled).to.equal(true);
+      expect(logger.initMethodCalledCount).to.equal(1);
+      expect(logger.handleRequestMethodCalledCount).to.equal(1);
+      expect(logger.handleResponseMethodCalledCount).to.equal(1);
+      // console.log('---> asset done');
+    });
+  });
 
-	it('@QoS on a method with recursive invocations, QoSed method is triggered by "this" reference', function() {
-		let ni: NestedInvocation = new NestedInvocation();
-		logger.reset();
-		ni.reset();
-		ni.invoke();
-		expect(ni.callbackMethodCalledCount).to.equal(1);
-		expect(logger.initMethodCalledCount).to.equal(MAX_NESTED_STACK_DEPTH);
-		expect(logger.handleRequestMethodCalledCount).to.equal(MAX_NESTED_STACK_DEPTH);
-		expect(logger.handleResponseMethodCalledCount).to.equal(MAX_NESTED_STACK_DEPTH);
-	});
+  it('@QoS on async-callback method with async-interceptor', function() {
+    let ss: StockService = new StockService('IBM', 100);
+    asyncLogger.reset();
+    ss.reset();
+    let isCallbackCalled: boolean = false;
+    let deferred: Q.Deferred<any> = Q.defer<any>();
 
-	it('@QoS on sync-return bind()ed method', function() {
-		let ss: StockService = new StockService('IBM', 100);
-		logger.reset();
-		let bindedFn = ss.getPrice.bind(ss);
-		let price: number = bindedFn('IBM');
-		expect(price).to.equal(100);
-		expect(logger.initMethodCalledCount).to.equal(1);
-		expect(logger.handleRequestMethodCalledCount).to.equal(1);
-		expect(logger.handleResponseMethodCalledCount).to.equal(1);
-	});
-	
-	it('Validation: async style interceptor can NOT be applied to sync style target method', function() {
-		let hello: MismatchedInteraction = new MismatchedInteraction();
-		try {
-			hello.greet('World');
-		} catch(err) {
-			expect(true).to.equal(err.message.indexOf('Invalid interaction styles') !== -1);
-		}
-	});
-	
-	it('Validation: conflict/dumplicated interceptor names', function() {
-		let hello: MismatchedInteraction = new MismatchedInteraction();
-		try {
-			hello.hi('World');
-		} catch(err) {
-			expect(true).to.equal(err.message.indexOf('Conflict interceptor name') !== -1);
-		}
-	});
+    ss.getPriceAsyncCallbackWithAsyncInterceptor('IBM', function(error: any, result: number) {
+      isCallbackCalled = true;
+
+      // wait for invocation completion
+      setTimeout(function() {
+        deferred.resolve();
+      }, DELAY_EXECUTION_TIME + 50);
+    });
+
+    return deferred.promise.then(function() {
+      expect(isCallbackCalled).to.equal(true);
+      expect(asyncLogger.initMethodCalledCount).to.equal(1);
+      expect(asyncLogger.handleRequestMethodCalledCount).to.equal(1);
+      expect(asyncLogger.handleResponseMethodCalledCount).to.equal(1);
+      // console.log('---> asset done');
+    });
+  });
+
+  it('@QoS on sync-callback method which being invoked recursively with a pass-through callback function handler', function() {
+    let ni: NestedInvocation = new NestedInvocation();
+    logger.reset();
+    ni.reset();
+    // expect(true).to.equal(ni.equals(ni));
+    // expect(true).to.equal(ni.fnEquals(ni.nestInvoke));
+    ni.nestInvoke('nested-tester', ni.callback.bind(ni));
+    expect(ni.callbackMethodCalledCount).to.equal(1);
+    expect(logger.initMethodCalledCount).to.equal(MAX_NESTED_STACK_DEPTH);
+    expect(logger.handleRequestMethodCalledCount).to.equal(MAX_NESTED_STACK_DEPTH);
+    expect(logger.handleResponseMethodCalledCount).to.equal(MAX_NESTED_STACK_DEPTH);
+  });
+
+  it('@QoS on a method with recursive invocations, QoSed method is triggered by "this" reference', function() {
+    let ni: NestedInvocation = new NestedInvocation();
+    logger.reset();
+    ni.reset();
+    ni.invoke();
+    expect(ni.callbackMethodCalledCount).to.equal(1);
+    expect(logger.initMethodCalledCount).to.equal(MAX_NESTED_STACK_DEPTH);
+    expect(logger.handleRequestMethodCalledCount).to.equal(MAX_NESTED_STACK_DEPTH);
+    expect(logger.handleResponseMethodCalledCount).to.equal(MAX_NESTED_STACK_DEPTH);
+  });
+
+  it('@QoS on sync-return bind()ed method', function() {
+    let ss: StockService = new StockService('IBM', 100);
+    logger.reset();
+    let bindedFn = ss.getPrice.bind(ss);
+    let price: number = bindedFn('IBM');
+    expect(price).to.equal(100);
+    expect(logger.initMethodCalledCount).to.equal(1);
+    expect(logger.handleRequestMethodCalledCount).to.equal(1);
+    expect(logger.handleResponseMethodCalledCount).to.equal(1);
+  });
+
+  it('Validation: async style interceptor can NOT be applied to sync style target method', function() {
+    let hello: MismatchedInteraction = new MismatchedInteraction();
+    try {
+      hello.greet('World');
+    } catch (err) {
+      expect(true).to.equal(err.message.indexOf('Invalid interaction styles') !== -1);
+    }
+  });
+
+  it('Validation: conflict/dumplicated interceptor names', function() {
+    let hello: MismatchedInteraction = new MismatchedInteraction();
+    try {
+      hello.hi('World');
+    } catch (err) {
+      expect(true).to.equal(err.message.indexOf('Conflict interceptor name') !== -1);
+    }
+  });
 });

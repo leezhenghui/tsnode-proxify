@@ -306,6 +306,10 @@ export class Registry<I extends Processor, M extends InterceptorMetadata> {
       debug(method + ' [Exit](failed)', ides);
       return;
     }
+
+    if (ides.__class__.name && ides.__class__.name.indexOf('system:') === 0) {
+      throw new Error('Interceptor name can not start with "system:"');
+    }
     this.__interceptors__[ides.__class__.name] = ides;
     debug(method + ' [Exit]', ides);
   }

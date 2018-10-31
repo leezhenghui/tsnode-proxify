@@ -14,164 +14,165 @@
  * limitations under the License.
  */
 
-import { 
-	Interceptor, 
-	Component, 
-	QoS,
+import {
+  Interceptor,
+  Component,
+  QoS,
   InteractionStyle,
-  Completion, 
+  Completion,
   Callback,
   Fault,
   Output,
-	InteractionStyleType,
-	AbstractInterceptor,
-	InvocationContext
-}                      from '../dist/index'; 
+  InteractionStyleType,
+  AbstractInterceptor,
+  InvocationContext,
+} from '../dist/index';
 
 @Interceptor({
-	"interactionStyle": InteractionStyleType.SYNC
+  interactionStyle: InteractionStyleType.SYNC,
 })
-class LoggingInterceptor extends AbstractInterceptor{
-	private LOG_PREFIX: string = '[LoggingInterceptor] ';
+class LoggingInterceptor extends AbstractInterceptor {
+  private LOG_PREFIX: string = '[LoggingInterceptor] ';
 
-	constructor(config: any) {
-		super(config);	
-	}
+  constructor(config: any) {
+    super(config);
+  }
 
-	private getTargetFullName (context: InvocationContext): string {
-		let targetFullName = context.__interaction__.omd.__className__ + '.' + context.__interaction__.omd.__operationName__;
+  private getTargetFullName(context: InvocationContext): string {
+    let targetFullName =
+      context.__interaction__.omd.__className__ + '.' + context.__interaction__.omd.__operationName__;
 
-		return targetFullName;
-	}
+    return targetFullName;
+  }
 
-	public init (context: InvocationContext, done: Function): void {
-		console.log(this.LOG_PREFIX + ' init');
-		done();
-	}
+  public init(context: InvocationContext, done: Function): void {
+    console.log(this.LOG_PREFIX + ' init');
+    done();
+  }
 
-	public handleRequest(context: InvocationContext, done: Function): void {
-		console.log(this.LOG_PREFIX + ' handleRequest: ' + this.getTargetFullName(context));
-		done();	
-	}
+  public handleRequest(context: InvocationContext, done: Function): void {
+    console.log(this.LOG_PREFIX + ' handleRequest: ' + this.getTargetFullName(context));
+    done();
+  }
 
-	public handleResponse(context: InvocationContext, done: Function): void {
-		console.log(this.LOG_PREFIX + ' handleResponse: '+ this.getTargetFullName(context));
-		done();	
-	}
+  public handleResponse(context: InvocationContext, done: Function): void {
+    console.log(this.LOG_PREFIX + ' handleResponse: ' + this.getTargetFullName(context));
+    done();
+  }
 
-	public handleFault(context: InvocationContext, done: Function): void {
-		console.log(this.LOG_PREFIX + ' handleFault: '+ this.getTargetFullName(context));
-		done();	
-	}
+  public handleFault(context: InvocationContext, done: Function): void {
+    console.log(this.LOG_PREFIX + ' handleFault: ' + this.getTargetFullName(context));
+    done();
+  }
 
-	public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
-		callback(null, true);	
-	}
+  public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
+    callback(null, true);
+  }
 
-	public getName(): string {
-		return 'LoggingInterceptor';	
-	}
+  public getName(): string {
+    return 'LoggingInterceptor';
+  }
 }
-		
+
 class BaseStock {
-	private stocks: any[] = [];
-	public servedCount: number = 0;
-	protected scope:any = null; 
+  private stocks: any[] = [];
+  public servedCount: number = 0;
+  protected scope: any = null;
 
-	constructor(name: string, price: number) {
-		if ( ! name) return this;
-		this.stocks.push({
-			name: name,
-			price: price
-		});	
-	}
+  constructor(name: string, price: number) {
+    if (!name) return this;
+    this.stocks.push({
+      name: name,
+      price: price,
+    });
+  }
 
-	static get DEFAULT_UNIT() {
-		return '$';	
-	}
+  static get DEFAULT_UNIT() {
+    return '$';
+  }
 
-	static set DEFAULT_UNIT(val:string) {
-		BaseStock.DEFAULT_UNIT = val;	
-	}
+  static set DEFAULT_UNIT(val: string) {
+    BaseStock.DEFAULT_UNIT = val;
+  }
 
-	@QoS({
-		interceptorType: LoggingInterceptor,
-		initParams: null,
-		singleton: null
-	})
-	static getVersion(): string {
-		return 'v1.0.0';	
-	}
+  @QoS({
+    interceptorType: LoggingInterceptor,
+    initParams: null,
+    singleton: null,
+  })
+  static getVersion(): string {
+    return 'v1.0.0';
+  }
 
-	@InteractionStyle(InteractionStyleType.SYNC)
-	@QoS({
-		interceptorType: LoggingInterceptor,
-		initParams: null,
-		singleton: null
-	})
-	getPrice(name: string): number {
-		console.log('[getPrice]', name);
+  @InteractionStyle(InteractionStyleType.SYNC)
+  @QoS({
+    interceptorType: LoggingInterceptor,
+    initParams: null,
+    singleton: null,
+  })
+  getPrice(name: string): number {
+    console.log('[getPrice]', name);
 
-		var reval = null;
-		this.stocks.some(function(stock) {
-			if (name === stock.name) {
-				reval = stock;
-				return true;
-			}	
-		});
-		return reval.price;	
-	}
+    var reval = null;
+    this.stocks.some(function(stock) {
+      if (name === stock.name) {
+        reval = stock;
+        return true;
+      }
+    });
+    return reval.price;
+  }
 
-	@QoS({
-		interceptorType: LoggingInterceptor,
-		initParams: null,
-		singleton: null
-	})
-	setPrice(name: string, price: number): void {
-		console.log('[setPrice]', name, price);
-		this.stocks.push({
-			name: name,
-			price: price
-		});	
-	}
+  @QoS({
+    interceptorType: LoggingInterceptor,
+    initParams: null,
+    singleton: null,
+  })
+  setPrice(name: string, price: number): void {
+    console.log('[setPrice]', name, price);
+    this.stocks.push({
+      name: name,
+      price: price,
+    });
+  }
 
-	@QoS({
-		interceptorType: LoggingInterceptor,
-		initParams: null,
-		singleton: null
-	})
-	printPrice(name: string, @Completion cb: (error: any, result: number) => void): void {
-		console.log('[printPrice]: ', name);
-		var reval = null;
-		this.stocks.some(function(stock) {
-			if (name === stock.name) {
-				reval = stock;
-				return true;
-			}	
-		});
+  @QoS({
+    interceptorType: LoggingInterceptor,
+    initParams: null,
+    singleton: null,
+  })
+  printPrice(name: string, @Completion cb: (error: any, result: number) => void): void {
+    console.log('[printPrice]: ', name);
+    var reval = null;
+    this.stocks.some(function(stock) {
+      if (name === stock.name) {
+        reval = stock;
+        return true;
+      }
+    });
 
-		cb(null, reval);
-	}
+    cb(null, reval);
+  }
 }
-	
+
 @Component({
-	"componentName": 'Stock',
+  componentName: 'Stock',
 })
 class Stock extends BaseStock {
-	constructor(name: string, price: number) {
-		super(name, price); 
-	}
+  constructor(name: string, price: number) {
+    super(name, price);
+  }
 }
 
 class Printer {
-	@Callback
-	print(@Fault error: any, @Output result: number): void {
-		if (error) {
-			console.error('Error occurs in callback method, due to: ', error);
-			return;
-		}	
-		console.log('[Printer]:', result);
-	}	
+  @Callback
+  print(@Fault error: any, @Output result: number): void {
+    if (error) {
+      console.error('Error occurs in callback method, due to: ', error);
+      return;
+    }
+    console.log('[Printer]:', result);
+  }
 }
 
 //=====================
@@ -189,5 +190,5 @@ console.log(stock.getPrice('Alibaba'));
 console.log('===========================================');
 console.log(Stock.getVersion());
 console.log('===========================================');
-let printer: Printer = new Printer(); 
+let printer: Printer = new Printer();
 stock.printPrice('IBM', printer.print);

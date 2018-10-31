@@ -1,61 +1,73 @@
-import { 
-	Interceptor, 
-	InteractionStyleType,
-	AbstractInterceptor,
-	InvocationContext
-}                      from '../../../dist/index'; 
+import { Interceptor, InteractionStyleType, AbstractInterceptor, InvocationContext } from '../../../dist/index';
 
 @Interceptor({
-	"interactionStyle": InteractionStyleType.SYNC
+  interactionStyle: InteractionStyleType.SYNC,
 })
-export class Logger extends AbstractInterceptor{
-	private LOG_PREFIX: string = '[logger] ';
+export class Logger extends AbstractInterceptor {
+  private LOG_PREFIX: string = '[logger] ';
 
-	constructor(config: any) {
-		super(config);	
-	}
+  constructor(config: any) {
+    super(config);
+  }
 
-	private getTargetFullName (context: InvocationContext): string {
-		let targetFullName = context.__interaction__.omd.__className__ + 
-			'.' + 
-			context.__interaction__.omd.__operationName__;
+  private getTargetFullName(context: InvocationContext): string {
+    let targetFullName =
+      context.__interaction__.omd.__className__ + '.' + context.__interaction__.omd.__operationName__;
 
-		return targetFullName;
-	}
+    return targetFullName;
+  }
 
-	public init (context: InvocationContext, done: Function): void {
-		console.log(this.LOG_PREFIX + '<init> ');
-		done();
-	}
+  public init(context: InvocationContext, done: Function): void {
+    console.log(this.LOG_PREFIX + '<init> ');
+    done();
+  }
 
-	public handleRequest(context: InvocationContext, done: Function): void {
-		console.log(this.LOG_PREFIX + '<request> ' + 
-			this.getTargetFullName(context) + '; [input]: "' + 
-			context.input + '"; [timestamp]: ' + new Date().getTime());
-		// console.log('callstack:', new Error());
-		done();	
-	}
+  public handleRequest(context: InvocationContext, done: Function): void {
+    console.log(
+      this.LOG_PREFIX +
+        '<request> ' +
+        this.getTargetFullName(context) +
+        '; [input]: "' +
+        context.input +
+        '"; [timestamp]: ' +
+        new Date().getTime(),
+    );
+    // console.log('callstack:', new Error());
+    done();
+  }
 
-	public handleResponse(context: InvocationContext, done: Function): void {
-		console.log(this.LOG_PREFIX + '<response> ' + 
-			this.getTargetFullName(context) + '; [output]: "' + context.output + 
-			'"; [timestamp]: ' + new Date().getTime());
-		// console.log('callstack:', new Error());
-		done();	
-	}
+  public handleResponse(context: InvocationContext, done: Function): void {
+    console.log(
+      this.LOG_PREFIX +
+        '<response> ' +
+        this.getTargetFullName(context) +
+        '; [output]: "' +
+        context.output +
+        '"; [timestamp]: ' +
+        new Date().getTime(),
+    );
+    // console.log('callstack:', new Error());
+    done();
+  }
 
-	public handleFault(context: InvocationContext, done: Function): void {
-		console.log(this.LOG_PREFIX + '<fault> ' + 
-			this.getTargetFullName(context) + '; [fault]: ' + context.fault + 
-			'; [timestamp]: ' + new Date().getTime());
-		done();	
-	}
+  public handleFault(context: InvocationContext, done: Function): void {
+    console.log(
+      this.LOG_PREFIX +
+        '<fault> ' +
+        this.getTargetFullName(context) +
+        '; [fault]: ' +
+        context.fault +
+        '; [timestamp]: ' +
+        new Date().getTime(),
+    );
+    done();
+  }
 
-	public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
-		callback(null, true);	
-	}
+  public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
+    callback(null, true);
+  }
 
-	public getName(): string {
-		return 'Logger';	
-	}
+  public getName(): string {
+    return 'Logger';
+  }
 }

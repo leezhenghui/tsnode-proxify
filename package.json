@@ -16,7 +16,7 @@
     "demo:helloworld:debug": "DEBUG=proxify* ts-node ./demo/helloworld.ts",
     "demo:stock": "ts-node ./demo/stock.ts",
     "benchmark": "ts-node ./benchmark/server.ts",
-    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\" && prettier --write \"demo/**/*.ts\" \"demo/**/*.js\" && prettier --write \"test/**/*.ts\" \"test/**/*.js\" && prettier --write \"benchmark/**/*.ts\" \"benchmark/**/*.js\"",
     "lint": "tslint -p tsconfig.json",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",

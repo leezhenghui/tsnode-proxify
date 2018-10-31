@@ -699,6 +699,15 @@ export class EndpointInvoker {
       const p: Processor = factory.create();
 
       const imtdt: InterceptorMetadata = interceptorRegistry.getInterceptorMetadata(p.getName());
+
+      if (!imtdt) {
+        throw new Error(
+          'Interceptor "' +
+            p.getName() +
+            '" was not registered, probably cause by a wrong interceptor name as it class name',
+        );
+      }
+
       if (asyncNotAllowed && imtdt.interactionStyle === InteractionStyleType.ASYNC) {
         throw new Error(
           'Invalid interaction styles: target method is sync, but the interceptor "' +
