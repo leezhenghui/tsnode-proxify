@@ -21,7 +21,7 @@
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",
-    "version": "npm run format && git add -A src",
+    "version": "npm run format && git add src",
     "postversion": "git push && git push --tags"
   },
   "author": "leezhenghui@gmail.com",
