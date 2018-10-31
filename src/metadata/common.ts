@@ -25,8 +25,8 @@ import * as Debug from 'debug';
 const debug: Debug.IDebugger = Debug('proxify:metadata:common');
 
 export enum InteractionStyleType {
-  ASYNC = 0,
   SYNC = 1,
+  ASYNC = 2,
 }
 
 export const isComponentManagedProp: string = '__is_component_managed__';

@@ -67,7 +67,7 @@ export class OperationMetadata {
   public __target_class__: AnyFn;
   public __operationName__: string;
   public __target_fn__: AnyFn;
-  public interactionStyle: InteractionStyleType;
+  public interactionStyle: InteractionStyleType = InteractionStyleType.SYNC;
   public __completion_fn_param_position__: number;
 
   private __factories__: InterceptorFactory[] = new Array();

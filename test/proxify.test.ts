@@ -312,7 +312,8 @@ import { InvocationContext, Processor, ProcessStatus } from '../src/runtime/invo
 			const self: Logger = this; 
 			this.debug(this.LOG_PREFIX + ' init');
 			this.initMethodCalledCount ++;
-			context.slots.set(self.getName(), {});
+			// context.slots.set(self.getName(), {});
+			context.setSlotContext({});
 			done();
 		}
 
@@ -320,7 +321,8 @@ import { InvocationContext, Processor, ProcessStatus } from '../src/runtime/invo
 			const self: Logger = this; 
 			this.debug(this.LOG_PREFIX + ' handleRequest: ' + this.getTargetFullName(context));
 			this.handleRequestMethodCalledCount ++;
-      let logCtx: any = context.slots.get(self.getName()).iid = self.handleRequestMethodCalledCount;
+      // let logCtx: any = context.slots.get(self.getName()).iid = self.handleRequestMethodCalledCount;
+			context.getSlotContext().iid = self.handleRequestMethodCalledCount;
 			// console.log('---> request iid: ' + this.handleRequestMethodCalledCount);
 			self.callStack.push(self.handleRequestMethodCalledCount);
 			done();	
@@ -333,8 +335,8 @@ import { InvocationContext, Processor, ProcessStatus } from '../src/runtime/invo
 			// console.log('<--- response iid: ' + context.slots.get(self.getName()).iid);
 			let iidInCS: number  = self.callStack.pop();
 
-			if (iidInCS !== context.slots.get(self.getName()).iid) {
-		    throw new Error('Mismatched callstack, actual: ' +  iidInCS + ', but expected: ' + context.slots.get(self.getName()).iid);	
+			if (iidInCS !== context.getSlotContext().iid) {
+		    throw new Error('Mismatched callstack, actual: ' +  iidInCS + ', but expected: ' + context.getSlotContext().iid);	
 			}
 			done();	
 		}
@@ -346,8 +348,8 @@ import { InvocationContext, Processor, ProcessStatus } from '../src/runtime/invo
 			// console.log('<--- fault iid: ' + context.slots.get(self.getName()).iid);
 			let iidInCS: number  = self.callStack.pop();
 
-			if (iidInCS !== context.slots.get(self.getName()).iid) {
-		    throw new Error('Mismatched callstack, actual: ' +  iidInCS + ', but expected: ' + context.slots.get(self.getName()).iid);	
+			if (iidInCS !== context.getSlotContext().iid) {
+		    throw new Error('Mismatched callstack, actual: ' +  iidInCS + ', but expected: ' + context.getSlotContext().iid);	
 			}
 			done();	
 		}
@@ -660,6 +662,25 @@ import { InvocationContext, Processor, ProcessStatus } from '../src/runtime/invo
 		    return true;	
 			}	
 			return false;
+		}
+	}
+	
+  @Component({
+		"componentName": 'MismatchedInteraction',
+	})
+	class MismatchedInteraction {
+
+		@InteractionStyle(InteractionStyleType.SYNC)
+		@QoS({ singleton: asyncLogger})
+		greet(name: string): string {
+			return "Hello, " + name;
+		}
+		
+		@InteractionStyle(InteractionStyleType.SYNC)
+		@QoS({ singleton: logger})
+		@QoS({ singleton: logger})
+		hi(name: string): string {
+			return "Hello, " + name;
 		}
 	}
 
@@ -1005,5 +1026,23 @@ describe('Integration Tests', function() {
 		expect(logger.initMethodCalledCount).to.equal(1);
 		expect(logger.handleRequestMethodCalledCount).to.equal(1);
 		expect(logger.handleResponseMethodCalledCount).to.equal(1);
+	});
+	
+	it('Validation: async style interceptor can NOT be applied to sync style target method', function() {
+		let hello: MismatchedInteraction = new MismatchedInteraction();
+		try {
+			hello.greet('World');
+		} catch(err) {
+			expect(true).to.equal(err.message.indexOf('Invalid interaction styles') !== -1);
+		}
+	});
+	
+	it('Validation: conflict/dumplicated interceptor names', function() {
+		let hello: MismatchedInteraction = new MismatchedInteraction();
+		try {
+			hello.hi('World');
+		} catch(err) {
+			expect(true).to.equal(err.message.indexOf('Conflict interceptor name') !== -1);
+		}
 	});
 });

@@ -30,5 +30,5 @@ const debug: Debug.IDebugger = Debug('proxify:metadata:interceptor');
 
 export class InterceptorMetadata {
   public __class__: AnyFn;
-  public interactionStyle: InteractionStyleType;
+  public interactionStyle: InteractionStyleType = InteractionStyleType.ASYNC;
 }
