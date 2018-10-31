@@ -26,7 +26,7 @@ import { InteractionStyleType } from '../metadata/common';
 import { OperationMetadata, InterceptorFactory } from '../metadata/operation';
 import { InterceptorMetadata } from '../metadata/interceptor';
 import { AnyFn } from '../util/types';
-import { interceptorRegistry } from './interceptor'; 
+import { interceptorRegistry } from './interceptor';
 
 const debug: Debug.IDebugger = Debug('proxify:runtime:invocation');
 
@@ -692,22 +692,26 @@ export class EndpointInvoker {
   private init(): void {
     const self: EndpointInvoker = this;
     const factories: InterceptorFactory[] = this.omd.getInterceptorFactories();
-		const asyncNotAllowed: boolean = (self.omd.interactionStyle === InteractionStyleType.SYNC) ? true : false;
-		const appliedInterceptorNames: Set<string> = new Set<string>();
+    const asyncNotAllowed: boolean = self.omd.interactionStyle === InteractionStyleType.SYNC ? true : false;
+    const appliedInterceptorNames: Set<string> = new Set<string>();
 
     factories.forEach(function(factory) {
       const p: Processor = factory.create();
 
-			const imtdt: InterceptorMetadata = interceptorRegistry.getInterceptorMetadata(p.getName());
-			if (asyncNotAllowed && imtdt.interactionStyle === InteractionStyleType.ASYNC) {
-				throw new Error('Invalid interaction styles: target method is sync, but the interceptor "' + p.getName() + '" is async style!');
-			}
+      const imtdt: InterceptorMetadata = interceptorRegistry.getInterceptorMetadata(p.getName());
+      if (asyncNotAllowed && imtdt.interactionStyle === InteractionStyleType.ASYNC) {
+        throw new Error(
+          'Invalid interaction styles: target method is sync, but the interceptor "' +
+            p.getName() +
+            '" is async style!',
+        );
+      }
 
-			if (appliedInterceptorNames.has(p.getName())) {
-				throw new Error('Conflict interceptor name: ' + p.getName());
-			} else {
-		    appliedInterceptorNames.add(p.getName());	
-			}
+      if (appliedInterceptorNames.has(p.getName())) {
+        throw new Error('Conflict interceptor name: ' + p.getName());
+      } else {
+        appliedInterceptorNames.add(p.getName());
+      }
 
       const previous: Processor = self.tail._getPrevious();
       p._setPrevious(previous);
