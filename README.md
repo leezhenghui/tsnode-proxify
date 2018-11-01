@@ -3,7 +3,7 @@
 [`tsnode-proxify`](https://github.com/leezhenghui/tsnode-proxify.git) is a proxy-based method hooks and AOP library for [node.js](https://nodejs.org) with [typescript](https://www.typescriptlang.org/). It allows you to extend/provide customized QoS handler and apply these QoS features via typescript decorators(metadata-programming-like syntax) without invasiveness to existing code logic, which increase modularity for your application.
 
 > 
-> tsnode-proxify depends on typescript decorator feature which marked as **experimental** feature in typescript. In the meanwhile, tsnode-proxify is a **beta** status project for now.
+> tsnode-proxify depends on typescript decorator feature which is marked as **experimental** feature in typescript. In the meanwhile, tsnode-proxify is still a **beta** version project for now. 
 
 ## Background
 
@@ -71,7 +71,7 @@ Before we dig into the tsnode-proxify, we need to clarify some concepts.
     
     - the returned promise's status change from pending to resolved or rejected (for async method with promise as return value only)  
 
-3. `tsnode-proxify` can support below **interaction style and completion hints combinations** with `before` and `after` advise join points
+3. [tsnode-proxify](https://github.com/leezhenghui/tsnode-proxify.git) can support below **interaction style and completion hints combinations** with `before` and `after` advise join points
 
     - `sync-return`
     
@@ -128,67 +128,200 @@ Before we dig into the tsnode-proxify, we need to clarify some concepts.
 - Prerequsites 
   - node.js 
   - typescript toolkits(including tsc and ts-node command)
-  - [Q](https://github.com/kriskowal/q) based promise
+  - [Q](https://github.com/kriskowal/q) based promise, will support native promise soon.
 
-- git clone 
+- Create your package folder e,g: named **hello-tsnode-proxify**
 
-  git clone https://github.com/leezhenghui/tsnode-proxify.git
+  ```shell
+  mkdir hello-tsnode-proxify
+  cd hello-tsnode-proxify
+  mkdir src
+  git init
+  echo "# My first sample for tsnode-proxify" >> README.md
+  git add . && git commit -m "initial commit"
+  ```
 
-- Run the helloworld sample 
+- Create **package.json**
 
-[HelloWord sample](https://github.com/leezhenghui/tsnode-proxify/tree/master/demo/helloworld.ts) just contains a simple typescript source file, which includes an simple interceptor as well as a sample class. Briefly the sample looks like below:
+  ```
+  npm init -y 
+  echo "node_modules" >> .gitignore
+  echo "dist" >> .gitignore
+  echo "package-lock.json" >> .gitignore
+  npm install --save-dev typescript
+  npm install --save tsnode-proxify
+  ```
+- Create **tsconfig.json**
 
-Hello class:
-
-```typescript
-@Component()
-class Hello {
-  constructor() {}
-
-  @InteractionStyle(InteractionStyleType.SYNC)
-  @QoS({interceptorType: Logger})
-  greet(name: string): string {
-    console.log('[greet]    ==> I am saying hello to', name);
-    return 'Hello, ' + name;	
+  ```
+  {
+    "compilerOptions": {
+      "target": "es5",
+      "module": "commonjs",
+      "declaration": true,
+      "outDir": "./dist",
+      "experimentalDecorators": true
+    },
+    "include": ["src"],
+    "exclude": ["node_modules"]
   }
-}
+  ```
+- Add scripts to package.json
 
-```
-
-Construct a hello instance and call it without any difference than the normal usages.
-
-```typescript
-//=====================
-//    main
-//====================
-
-let hello: Hello = new Hello();
-console.log('[result]: "' + hello.greet('World') + '"');
-
-```
-
-The output result with aspect logger feature:
-
-```
-npm install
-
-npm run demo:helloworld
-
-
-> ts-node ./demo/helloworld.ts
-
-[logger] <request> Hello.greet; [input]: "World"; [timestamp]: 1540720637480
-[greet]    ==> I am saying hello to World
-[logger] <response> Hello.greet; [output]: "Hello, World"; [timestamp]: 1540720637481
-[result]: "Hello, World"
+  ```
+	"build": "tsc",
+	"start": "node dist/helloworld.js",
+  "main": "dist/helloworld.js"
+  ```
   
-```
+- Create a logger interceptor in file **src/logger.ts** as below:
 
-- @Component decorator: declare a class to be managed as a component in tsnode-proxify  
-- @QoS decorator: declare a method to be proxify and provide `before` and `after` advises  
+  ```
+  import {
+    Interceptor,
+    InteractionStyleType,
+    AbstractInterceptor,
+    InvocationContext,
+  } from 'tsnode-proxify';
+  
+  @Interceptor({
+    interactionStyle: InteractionStyleType.SYNC,
+  })
+  export class Logger extends AbstractInterceptor {
+    private LOG_PREFIX: string = '[logger] ';
+  
+    constructor(config: any) {
+      super(config);
+    }
+  
+    private getTargetFullName(context: InvocationContext): string {
+      let targetFullName = context.getClassName() + '.' + context.getOperationName();
+  
+      return targetFullName;
+    }
+  
+    public init(context: InvocationContext, done: Function): void {
+      console.log(this.LOG_PREFIX + '<init> ');
+      done();
+    }
+  
+    public handleRequest(context: InvocationContext, done: Function): void {
+      console.log(
+        this.LOG_PREFIX +
+          '<request> ' +
+          this.getTargetFullName(context) +
+          '; [input]: "' +
+          context.input +
+          '"; [timestamp]: ' +
+          new Date().getTime(),
+      );
+      done();
+    }
+  
+    public handleResponse(context: InvocationContext, done: Function): void {
+      console.log(
+        this.LOG_PREFIX +
+          '<response> ' +
+          this.getTargetFullName(context) +
+          '; [output]: "' +
+          context.output +
+          '"; [timestamp]: ' +
+          new Date().getTime(),
+      );
+      done();
+    }
+  
+    public handleFault(context: InvocationContext, done: Function): void {
+      console.log(
+        this.LOG_PREFIX +
+          '<fault> ' +
+          this.getTargetFullName(context) +
+          '; [fault]: ' +
+          context.fault +
+          '; [timestamp]: ' +
+          new Date().getTime(),
+      );
+      done();
+    }
+  
+    public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
+      callback(null, true);
+    }
+  
+    public getName(): string {
+      return 'Logger';
+    }
+  }
+  ```
+
+  To create a interceptor which encapsulate an cross-cutting concern solution, you just need to implement a class, which
+
+  - @Interceptor decorator: declare a class to be registried as interceptor in tsnode-proxify runtime
+  - Extend the **AbastractInterceptor** base class, and implement the methods.
+
+- Create a component in file **src/helloworld.ts** as below:
+
+  As you see beow, to "declare" a class to be a component managed, we just add to apply a couple of decorators to it. No other differences than a normal class definition.
+  
+  ```
+  import {
+    Component,
+    QoS,
+    InteractionStyle,
+    Completion,
+    Callback,
+    Fault,
+    Output,
+    InteractionStyleType,
+    InvocationContext,
+  } from 'tsnode-proxify';
+  import { Logger } from './logger';
+  
+  @Component()
+  class Hello {
+    constructor() {}
+  
+    @InteractionStyle(InteractionStyleType.SYNC)
+    @QoS({ interceptorType: Logger })
+    greet(name: string): string {
+      console.log('[greet]    ==> I am saying hello to', name);
+      return 'Hello, ' + name;
+    }
+  }
+  
+  // =====================
+  //    main
+  // ====================
+  
+  let hello: Hello = new Hello();
+  console.log('[result]: "' + hello.greet('World') + '"');
+  ```
+
+  - @Component decorator: declare a class to be managed as a component in tsnode-proxify  
+  - @QoS decorator: declare a method to be proxify and provide `before` and `after` advises  
 
 > 
 > Notable, to keep the helloword sample as simple as possible, I don't introduce some other decorators in that sample. If you want to try @Completion and callback invocation, you can refer to [stock](https://github.com/leezhenghui/tsnode-proxify/tree/master/demo/stock.ts) sample. For more advanced usages, please refer to integration unit test cases.
+
+- Run the helloworld sample 
+
+  ```shell
+  npm run build
+  npm run start
+  ```
+
+- The output result with aspect logger feature:
+
+  ```
+  > hello-tsnode-proxify@1.0.0 start /home/lizh/tmp/hello-tsnode-proxify
+  > node dist/helloworld.js
+  
+  [logger] <init> 
+  [logger] <request> Hello.greet; [input]: "World"; [timestamp]: 1541054935419
+  [greet]    ==> I am saying hello to World
+  [logger] <response> Hello.greet; [output]: "Hello, World"; [timestamp]: 1541054935420
+  [result]: "Hello, World"
+  ```
 
 ### Run Unit Tests
 
@@ -197,7 +330,7 @@ You can run the unit tests to get a full picture of what tsnode-proxify support 
 ```shell
 npm run test
 
-> mocha --compilers ts:ts-node/register,tsx:ts-node/register ./src/test/**/*test.ts
+> mocha --compilers ts:ts-node/register,tsx:ts-node/register ./test/**/*test.ts
 
     ...
 
@@ -205,13 +338,15 @@ Integration Tests
    ✓ @QoS on static sync-return method with sync-interceptor
    ✓ @QoS on sync-return method with sync-interceptor
    ✓ @QoS on sync-callback method with sync-interceptor
-   ✓ @QoS on async-promise method with sync-interceptor (102ms)
-   ✓ @QoS on async-promise method with async-interceptor (100ms)
-   ✓ @QoS on async-callback method with sync-interceptor (101ms)
-   ✓ @QoS on async-callback method with async-interceptor (252ms)
-   ✓ @QoS on sync-callback method which being invoked recursively with a pass-through callback function handler 
+   ✓ @QoS on async-promise method with sync-interceptor (101ms)
+   ✓ @QoS on async-promise method with async-interceptor (101ms)
+   ✓ @QoS on async-callback method with sync-interceptor (100ms)
+   ✓ @QoS on async-callback method with async-interceptor (251ms)
+   ✓ @QoS on sync-callback method which being invoked recursively with a pass-through callback function handler
    ✓ @QoS on a method with recursive invocations, QoSed method is triggered by "this" reference
    ✓ @QoS on sync-return bind()ed method
+   ✓ Validation: async style interceptor can NOT be applied to sync style target method
+   ✓ Validation: conflict/dumplicated interceptor names
 ```
 
 ## Join us
