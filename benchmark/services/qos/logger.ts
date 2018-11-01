@@ -1,4 +1,11 @@
-import { Interceptor, InteractionStyleType, AbstractInterceptor, InvocationContext } from '../../../dist/index';
+import {
+  Interceptor,
+  InteractionStyleType,
+  AbstractInterceptor,
+  InvocationContext,
+  doneFn,
+  canProcessCallbackFn,
+} from '../../../dist/index';
 
 @Interceptor({
   interactionStyle: InteractionStyleType.SYNC,
@@ -16,12 +23,12 @@ export class Logger extends AbstractInterceptor {
     return targetFullName;
   }
 
-  public init(context: InvocationContext, done: Function): void {
+  public init(context: InvocationContext, done: doneFn): void {
     console.log(this.LOG_PREFIX + '<init> ');
     done();
   }
 
-  public handleRequest(context: InvocationContext, done: Function): void {
+  public handleRequest(context: InvocationContext, done: doneFn): void {
     console.log(
       this.LOG_PREFIX +
         '<request> ' +
@@ -35,7 +42,7 @@ export class Logger extends AbstractInterceptor {
     done();
   }
 
-  public handleResponse(context: InvocationContext, done: Function): void {
+  public handleResponse(context: InvocationContext, done: doneFn): void {
     console.log(
       this.LOG_PREFIX +
         '<response> ' +
@@ -49,7 +56,7 @@ export class Logger extends AbstractInterceptor {
     done();
   }
 
-  public handleFault(context: InvocationContext, done: Function): void {
+  public handleFault(context: InvocationContext, done: doneFn): void {
     console.log(
       this.LOG_PREFIX +
         '<fault> ' +
@@ -62,7 +69,7 @@ export class Logger extends AbstractInterceptor {
     done();
   }
 
-  public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
+  public canProcess(context: InvocationContext, callback: canProcessCallbackFn): void {
     callback(null, true);
   }
 

@@ -30,7 +30,7 @@ import { InteractionStyleType, isComponentManagedProp, isCallbackWrappedProp } f
 import { INTERCEPTOR_METADATA_SLOT } from '../src/metadata/interceptor';
 import { OPERATION_METADATA_SLOT } from '../src/metadata/operation';
 import { CALLBACK_METADATA_SLOT } from '../src/metadata/callback';
-import * as interceptor from '../src/runtime/interceptor';
+import { interceptorRegistry, AbstractInterceptor, doneFn, canProcessCallbackFn } from '../src/runtime/interceptor';
 import { InvocationContext, Processor, ProcessStatus } from '../src/runtime/invocation';
 
 //=================================================
@@ -40,12 +40,12 @@ import { InvocationContext, Processor, ProcessStatus } from '../src/runtime/invo
 @Interceptor({
   interactionStyle: InteractionStyleType.SYNC,
 })
-class FooInterceptor extends interceptor.AbstractInterceptor {
+class FooInterceptor extends AbstractInterceptor {
   constructor(config: any) {
     super(config);
   }
 
-  public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
+  public canProcess(context: InvocationContext, callback: canProcessCallbackFn): void {
     callback(null, true);
   }
 
@@ -57,12 +57,12 @@ class FooInterceptor extends interceptor.AbstractInterceptor {
 @Interceptor({
   interactionStyle: InteractionStyleType.SYNC,
 })
-class BarInterceptor extends interceptor.AbstractInterceptor {
+class BarInterceptor extends AbstractInterceptor {
   constructor(config: any) {
     super(config);
   }
 
-  public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
+  public canProcess(context: InvocationContext, callback: canProcessCallbackFn): void {
     callback(null, true);
   }
 
@@ -71,12 +71,12 @@ class BarInterceptor extends interceptor.AbstractInterceptor {
   }
 }
 
-class BarInterceptorWithoutDecorator extends interceptor.AbstractInterceptor {
+class BarInterceptorWithoutDecorator extends AbstractInterceptor {
   constructor(config: any) {
     super(config);
   }
 
-  public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
+  public canProcess(context: InvocationContext, callback: canProcessCallbackFn): void {
     callback(null, true);
   }
 
@@ -92,12 +92,12 @@ class BarInterceptorWithoutDecorator extends interceptor.AbstractInterceptor {
 @Interceptor({
   interactionStyle: InteractionStyleType.SYNC,
 })
-class FakeInterceptor extends interceptor.AbstractInterceptor {
+class FakeInterceptor extends AbstractInterceptor {
   constructor(config: any) {
     super(config);
   }
 
-  public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
+  public canProcess(context: InvocationContext, callback: canProcessCallbackFn): void {
     callback(null, true);
   }
 
@@ -108,7 +108,7 @@ class FakeInterceptor extends interceptor.AbstractInterceptor {
 @Interceptor({
   interactionStyle: InteractionStyleType.SYNC,
 })
-class LoggingInterceptor extends interceptor.AbstractInterceptor {
+class LoggingInterceptor extends AbstractInterceptor {
   private debug: Debug.IDebugger = Debug('proxify:LoggingInterceptor');
   private LOG_PREFIX: string = '[LoggingInterceptor] ';
   constructor(config: any) {
@@ -121,17 +121,17 @@ class LoggingInterceptor extends interceptor.AbstractInterceptor {
     return targetFullName;
   }
 
-  public init(context: InvocationContext, done: Function): void {
+  public init(context: InvocationContext, done: doneFn): void {
     this.debug(this.LOG_PREFIX + ' init ');
     done();
   }
 
-  public handleRequest(context: InvocationContext, done: Function): void {
+  public handleRequest(context: InvocationContext, done: doneFn): void {
     this.debug(this.LOG_PREFIX + ' handleRequest: ' + this.getTargetFullName(context));
     done();
   }
 
-  public handleResponse(context: InvocationContext, done: Function): void {
+  public handleResponse(context: InvocationContext, done: doneFn): void {
     this.debug(this.LOG_PREFIX + ' handleResponse: ' + this.getTargetFullName(context));
     done();
   }
@@ -141,7 +141,7 @@ class LoggingInterceptor extends interceptor.AbstractInterceptor {
     done();
   }
 
-  public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
+  public canProcess(context: InvocationContext, callback: canProcessCallbackFn): void {
     callback(null, true);
   }
 
@@ -286,7 +286,7 @@ class CBClass {
 @Interceptor({
   interactionStyle: InteractionStyleType.SYNC,
 })
-class Logger extends interceptor.AbstractInterceptor {
+class Logger extends AbstractInterceptor {
   private LOG_PREFIX: string = '[Logger] ';
   private debug: Debug.IDebugger = Debug('proxify:Logger');
 
@@ -307,7 +307,7 @@ class Logger extends interceptor.AbstractInterceptor {
     return targetFullName;
   }
 
-  public init(context: InvocationContext, done: Function): void {
+  public init(context: InvocationContext, done: doneFn): void {
     const self: Logger = this;
     this.debug(this.LOG_PREFIX + ' init');
     this.initMethodCalledCount++;
@@ -316,7 +316,7 @@ class Logger extends interceptor.AbstractInterceptor {
     done();
   }
 
-  public handleRequest(context: InvocationContext, done: Function): void {
+  public handleRequest(context: InvocationContext, done: doneFn): void {
     const self: Logger = this;
     this.debug(this.LOG_PREFIX + ' handleRequest: ' + this.getTargetFullName(context));
     this.handleRequestMethodCalledCount++;
@@ -327,7 +327,7 @@ class Logger extends interceptor.AbstractInterceptor {
     done();
   }
 
-  public handleResponse(context: InvocationContext, done: Function): void {
+  public handleResponse(context: InvocationContext, done: doneFn): void {
     const self: Logger = this;
     this.debug(this.LOG_PREFIX + ' handleResponse: ' + this.getTargetFullName(context));
     this.handleResponseMethodCalledCount++;
@@ -340,7 +340,7 @@ class Logger extends interceptor.AbstractInterceptor {
     done();
   }
 
-  public handleFault(context: InvocationContext, done: Function): void {
+  public handleFault(context: InvocationContext, done: doneFn): void {
     const self: Logger = this;
     this.debug(this.LOG_PREFIX + ' handleFault: ' + this.getTargetFullName(context));
     this.handleFaultMethodCalledCount++;
@@ -353,7 +353,7 @@ class Logger extends interceptor.AbstractInterceptor {
     done();
   }
 
-  public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
+  public canProcess(context: InvocationContext, callback: canProcessCallbackFn): void {
     callback(null, true);
   }
 
@@ -372,7 +372,7 @@ class Logger extends interceptor.AbstractInterceptor {
 @Interceptor({
   interactionStyle: InteractionStyleType.ASYNC,
 })
-class AsyncLogger extends interceptor.AbstractInterceptor {
+class AsyncLogger extends AbstractInterceptor {
   private LOG_PREFIX: string = '[Logger] ';
   private debug: Debug.IDebugger = Debug('proxify:Logger');
 
@@ -391,7 +391,7 @@ class AsyncLogger extends interceptor.AbstractInterceptor {
     return targetFullName;
   }
 
-  public init(context: InvocationContext, done: Function): void {
+  public init(context: InvocationContext, done: doneFn): void {
     const self: AsyncLogger = this;
     Q().then(function() {
       self.debug(self.LOG_PREFIX + ' init');
@@ -400,7 +400,7 @@ class AsyncLogger extends interceptor.AbstractInterceptor {
     });
   }
 
-  public handleRequest(context: InvocationContext, done: Function): void {
+  public handleRequest(context: InvocationContext, done: doneFn): void {
     const self: AsyncLogger = this;
     Q().then(function() {
       self.debug(self.LOG_PREFIX + ' handleRequest: ' + self.getTargetFullName(context));
@@ -409,7 +409,7 @@ class AsyncLogger extends interceptor.AbstractInterceptor {
     });
   }
 
-  public handleResponse(context: InvocationContext, done: Function): void {
+  public handleResponse(context: InvocationContext, done: doneFn): void {
     const self: AsyncLogger = this;
     Q().then(function() {
       self.debug(self.LOG_PREFIX + ' handleResponse: ' + self.getTargetFullName(context));
@@ -418,7 +418,7 @@ class AsyncLogger extends interceptor.AbstractInterceptor {
     });
   }
 
-  public handleFault(context: InvocationContext, done: Function): void {
+  public handleFault(context: InvocationContext, done: doneFn): void {
     const self: AsyncLogger = this;
     Q().then(function() {
       self.debug(self.LOG_PREFIX + ' handleFault: ' + self.getTargetFullName(context));
@@ -427,7 +427,7 @@ class AsyncLogger extends interceptor.AbstractInterceptor {
     });
   }
 
-  public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
+  public canProcess(context: InvocationContext, callback: canProcessCallbackFn): void {
     const self: AsyncLogger = this;
     Q().then(function() {
       callback(null, true);
@@ -687,12 +687,12 @@ class MismatchedInteraction {
 
 describe('@Interceptor Tests', function() {
   it('Register Interceptor Class/Metadata Via Decorator', function() {
-    let creator: Function = interceptor.interceptorRegistry.getInterceptorClass(FooInterceptor.name);
+    let creator: Function = interceptorRegistry.getInterceptorClass(FooInterceptor.name);
     expect(creator.name).to.equal(FooInterceptor.name);
-    creator = interceptor.interceptorRegistry.getInterceptorClass(BarInterceptor.name);
+    creator = interceptorRegistry.getInterceptorClass(BarInterceptor.name);
     expect(creator.name).to.equal(BarInterceptor.name);
     expect(creator[INTERCEPTOR_METADATA_SLOT].interactionStyle).to.equal(InteractionStyleType.SYNC);
-    creator = interceptor.interceptorRegistry.getInterceptorClass(BarInterceptorWithoutDecorator.name);
+    creator = interceptorRegistry.getInterceptorClass(BarInterceptorWithoutDecorator.name);
     expect(creator).to.equal(null);
   });
 });
@@ -707,8 +707,8 @@ describe('@Component, @QoS, @Completion, @Callback Basic Function Tests', functi
     let initParams = [];
 
     expect(iFn.name).to.equal('LoggingInterceptor');
-    let i: interceptor.AbstractInterceptor = Reflect.construct(iFn, initParams);
-    expect(i instanceof interceptor.AbstractInterceptor).to.equal(true);
+    let i: AbstractInterceptor = Reflect.construct(iFn, initParams);
+    expect(i instanceof AbstractInterceptor).to.equal(true);
     expect(i instanceof Processor).to.equal(true);
     expect(i.getName()).to.equal('LoggingInterceptor');
   });

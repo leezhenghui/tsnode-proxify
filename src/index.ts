@@ -33,5 +33,5 @@ export { InteractionStyleType } from './metadata/common';
 //               Runtime Part
 // =====================================================================
 
-export { AbstractInterceptor } from './runtime/interceptor';
+export { AbstractInterceptor, doneFn, canProcessCallbackFn } from './runtime/interceptor';
 export { InvocationContext } from './runtime/invocation';

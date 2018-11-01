@@ -31,6 +31,7 @@ import { interceptorRegistry } from './interceptor';
 const debug: Debug.IDebugger = Debug('proxify:runtime:invocation');
 
 export type ProcessorNexter = (error: any, status: ProcessStatus) => void;
+export type canProcessCallbackFn = (error: any, canProcess: boolean) => void;
 
 export enum InteractionType {
   UNSUPPORTED = 0,
@@ -321,7 +322,7 @@ export abstract class Processor {
     this.__previous = null;
   }
 
-  public abstract canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void;
+  public abstract canProcess(context: InvocationContext, callback: canProcessCallbackFn): void;
   public abstract getName(): string;
 
   /**
@@ -331,7 +332,7 @@ export abstract class Processor {
    * to indicate this intention
    * Sugguested usage is only be accessed in same module, e.g: BaseInterceptor
    */
-  public abstract _process(context: InvocationContext, next: (error: any, status: ProcessStatus) => void): void;
+  public abstract _process(context: InvocationContext, next: ProcessorNexter): void;
 
   /**
    * Public method to set next interceptor
@@ -412,7 +413,7 @@ class HeaderInvoker extends Processor {
     this.omd = omd;
   }
 
-  public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
+  public canProcess(context: InvocationContext, callback: canProcessCallbackFn): void {
     callback(null, true);
   }
 
@@ -420,7 +421,7 @@ class HeaderInvoker extends Processor {
     return 'system:internal:header';
   }
 
-  public _process(context: InvocationContext, next: (error: any, status: ProcessStatus) => void): void {
+  public _process(context: InvocationContext, next: ProcessorNexter): void {
     const self: HeaderInvoker = this;
     const method: string = self.getName() + '._process';
     context.__setCurrentProcessor(self);
@@ -480,7 +481,7 @@ class TailInvoker extends Processor {
     this.targetFn = targetFn;
   }
 
-  public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
+  public canProcess(context: InvocationContext, callback: canProcessCallbackFn): void {
     callback(null, true);
   }
 
@@ -488,7 +489,7 @@ class TailInvoker extends Processor {
     return 'system:internal:tail';
   }
 
-  public _process(context: InvocationContext, next: (error: any, status: ProcessStatus) => void): void {
+  public _process(context: InvocationContext, next: ProcessorNexter): void {
     const self: TailInvoker = this;
     const method: string = self.getName() + '._process';
     context.__setCurrentProcessor(self);
@@ -631,7 +632,7 @@ class OnInvokeResponser extends Processor {
     this._setPrevious(tail);
   }
 
-  public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
+  public canProcess(context: InvocationContext, callback: canProcessCallbackFn): void {
     callback(null, true);
   }
 
@@ -639,7 +640,7 @@ class OnInvokeResponser extends Processor {
     return 'system:internal:onInvokeResponser';
   }
 
-  public _process(context: InvocationContext, next: (error: any, status: ProcessStatus) => void): void {
+  public _process(context: InvocationContext, next: ProcessorNexter): void {
     const self: OnInvokeResponser = this;
     context.__setCurrentProcessor(self);
     const holdOnNexter = context.getHoldOnNexter();

@@ -186,6 +186,8 @@ Before we dig into the tsnode-proxify, we need to clarify some concepts.
     InteractionStyleType,
     AbstractInterceptor,
     InvocationContext,
+		doneFn,
+		canProcessCallbackFn,
   } from 'tsnode-proxify';
   
   @Interceptor({
@@ -204,12 +206,12 @@ Before we dig into the tsnode-proxify, we need to clarify some concepts.
       return targetFullName;
     }
   
-    public init(context: InvocationContext, done: Function): void {
+    public init(context: InvocationContext, done: doneFn): void {
       console.log(this.LOG_PREFIX + '<init> ');
       done();
     }
   
-    public handleRequest(context: InvocationContext, done: Function): void {
+    public handleRequest(context: InvocationContext, done: doneFn): void {
       console.log(
         this.LOG_PREFIX +
           '<request> ' +
@@ -222,7 +224,7 @@ Before we dig into the tsnode-proxify, we need to clarify some concepts.
       done();
     }
   
-    public handleResponse(context: InvocationContext, done: Function): void {
+    public handleResponse(context: InvocationContext, done: doneFn): void {
       console.log(
         this.LOG_PREFIX +
           '<response> ' +
@@ -235,7 +237,7 @@ Before we dig into the tsnode-proxify, we need to clarify some concepts.
       done();
     }
   
-    public handleFault(context: InvocationContext, done: Function): void {
+    public handleFault(context: InvocationContext, done: doneFn): void {
       console.log(
         this.LOG_PREFIX +
           '<fault> ' +
@@ -248,7 +250,7 @@ Before we dig into the tsnode-proxify, we need to clarify some concepts.
       done();
     }
   
-    public canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void {
+    public canProcess(context: InvocationContext, callback: canProcessCallbackFn): void {
       callback(null, true);
     }
   

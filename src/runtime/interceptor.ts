@@ -32,8 +32,14 @@ import {
   InvocationContext,
   Processor,
   ProcessStatus,
+  canProcessCallbackFn,
+  ProcessorNexter,
 } from '../runtime/invocation';
+
 import { AnyFn } from '../util/types';
+
+export { canProcessCallbackFn } from '../runtime/invocation';
+export type doneFn = (error?: any) => void;
 
 const debug: Debug.IDebugger = Debug('proxify:runtime:interceptor');
 
@@ -42,25 +48,25 @@ export abstract class AbstractInterceptor extends Processor {
     super();
   }
 
-  public abstract canProcess(context: InvocationContext, callback: (error: any, canProcess: boolean) => void): void;
+  public abstract canProcess(context: InvocationContext, callback: canProcessCallbackFn): void;
 
-  public init(context: InvocationContext, done: AnyFn): void {
+  public init(context: InvocationContext, done: doneFn): void {
     done();
   }
 
-  public handleRequest(context: InvocationContext, done: AnyFn): void {
+  public handleRequest(context: InvocationContext, done: doneFn): void {
     done();
   }
 
-  public handleResponse(context: InvocationContext, done: AnyFn): void {
+  public handleResponse(context: InvocationContext, done: doneFn): void {
     done();
   }
 
-  public handleFault(context: InvocationContext, done: AnyFn): void {
+  public handleFault(context: InvocationContext, done: doneFn): void {
     done();
   }
 
-  public _process(context: InvocationContext, next: (error: any, status: ProcessStatus) => void): void {
+  public _process(context: InvocationContext, next: ProcessorNexter): void {
     const self: AbstractInterceptor = this;
     const method: string = self.getName() + '._process';
     context.__setCurrentProcessor(self);
