@@ -186,8 +186,8 @@ Before we dig into the tsnode-proxify, we need to clarify some concepts.
     InteractionStyleType,
     AbstractInterceptor,
     InvocationContext,
-		doneFn,
-		canProcessCallbackFn,
+    doneFn,
+    canProcessCallbackFn,
   } from 'tsnode-proxify';
   
   @Interceptor({
