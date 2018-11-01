@@ -39,8 +39,7 @@ class LoggingInterceptor extends AbstractInterceptor {
   }
 
   private getTargetFullName(context: InvocationContext): string {
-    let targetFullName =
-      context.__interaction__.omd.__className__ + '.' + context.__interaction__.omd.__operationName__;
+    let targetFullName = context.getClassName() + '.' + context.getOperationName();
 
     return targetFullName;
   }

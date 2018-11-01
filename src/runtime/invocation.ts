@@ -30,6 +30,8 @@ import { interceptorRegistry } from './interceptor';
 
 const debug: Debug.IDebugger = Debug('proxify:runtime:invocation');
 
+export type ProcessorNexter = (error: any, status: ProcessStatus) => void;
+
 export enum InteractionType {
   UNSUPPORTED = 0,
   INTERACTION_LOCATE = 1,
@@ -51,7 +53,7 @@ export class Interaction {
   public interactionType: InteractionType;
   public omd: OperationMetadata;
   public _isTargetInvoked: boolean = false;
-  public __hold_on_nexter__: (error: any, status: ProcessStatus) => void;
+  public __hold_on_nexter__: ProcessorNexter;
   public __completion_style__: CompletionStyle;
   public __isCallbackStyle__: boolean;
 }
@@ -113,22 +115,129 @@ export class InvocationContext {
    * info to perform the processing. Highlevel interceptor should extend from BaseInterceptor,
    * can not access these hiden metadata
    */
-  public __interaction__: Interaction;
+  private __interaction__: Interaction;
+
+  public getInteraction(): Interaction {
+    const self: InvocationContext = this;
+    if (!self.isRunningInSystemProcessor()) {
+      throw new Error('Forbidden operation, this operation only be allowed in internal processor!');
+    }
+
+    return self.__interaction__;
+  }
+
+  public _setInteraction(i: Interaction): void {
+    const self: InvocationContext = this;
+    if (!self.isRunningInSystemProcessor()) {
+      throw new Error('Forbidden operation, this operation only be allowed in internal processor!');
+    }
+    self.__interaction__ = i;
+  }
 
   public getInteractionType(): InteractionType {
     const self: InvocationContext = this;
-    return self.__interaction__.interactionType;
+    if (self.__interaction__) {
+      return self.__interaction__.interactionType;
+    }
+
+    return null;
   }
 
-  public _setInteractionType(interactionType: InteractionType): void {
+  public setInteractionType(interactionType: InteractionType): void {
     const self: InvocationContext = this;
-    // TODO, do validation, only allow Header and Tail Invoker to call this method
+
     self.__interaction__.interactionType = interactionType;
+  }
+
+  public getCompletionStyle(): CompletionStyle {
+    const self: InvocationContext = this;
+
+    return self.__interaction__.__completion_style__;
+  }
+
+  public _setCompletionStyle(s: CompletionStyle): void {
+    const self: InvocationContext = this;
+    if (!self.isRunningInSystemProcessor()) {
+      throw new Error('Forbidden operation, this operation only be allowed in internal processor!');
+    }
+
+    self.__interaction__.__completion_style__ = s;
+  }
+
+  public _setOperationMetadata(omtdt: OperationMetadata): void {
+    const self: InvocationContext = this;
+    if (!self.isRunningInSystemProcessor()) {
+      throw new Error('Forbidden operation, this operation only be allowed in internal processor!');
+    }
+
+    self.__interaction__.omd = omtdt;
+  }
+
+  public getHoldOnNexter(): ProcessorNexter {
+    const self: InvocationContext = this;
+    if (!self.isRunningInSystemProcessor()) {
+      throw new Error('Forbidden operation, this operation only be allowed in internal processor!');
+    }
+
+    return self.__interaction__.__hold_on_nexter__;
+  }
+
+  public _setHoldOnNexter(nexter: ProcessorNexter): void {
+    const self: InvocationContext = this;
+    if (!self.isRunningInSystemProcessor()) {
+      throw new Error('Forbidden operation, this operation only be allowed in internal processor!');
+    }
+
+    self.__interaction__.__hold_on_nexter__ = nexter;
+  }
+
+  public _setCallbackStyle(isCallbackStyle: boolean): void {
+    const self: InvocationContext = this;
+    if (!self.isRunningInSystemProcessor()) {
+      throw new Error('Forbidden operation, this operation only be allowed in internal processor!');
+    }
+
+    self.__interaction__.__isCallbackStyle__ = isCallbackStyle;
+  }
+
+  private isRunningInSystemProcessor(): boolean {
+    const self: InvocationContext = this;
+
+    if (!self.currentProssor) {
+      // still not get into processor, e.g: in the endpoint invoker
+      return true;
+    }
+
+    if (self.currentProssor.getName().indexOf('system:') === 0) {
+      return true;
+    }
+
+    return false;
   }
 
   public __setCurrentProcessor(p: Processor): void {
     const self: InvocationContext = this;
+    const origP = self.currentProssor;
+
     self.currentProssor = p;
+    debug(
+      'Processor shift: ' +
+        (origP ? origP.getName() : 'null') +
+        ' --> ' +
+        (p ? p.getName() : 'null') +
+        '; InteractionType: ' +
+        self.getInteractionType(),
+    );
+  }
+
+  public getClassName(): string {
+    const self: InvocationContext = this;
+    return self.__interaction__.omd.__className__;
+  }
+
+  public getOperationName(): string {
+    const self: InvocationContext = this;
+    return self.__interaction__.omd.__operationName__;
   }
 
   public _isCallbackSupported(): boolean {
@@ -312,14 +421,14 @@ class HeaderInvoker extends Processor {
   }
 
   public _process(context: InvocationContext, next: (error: any, status: ProcessStatus) => void): void {
-    const self: Processor = this;
+    const self: HeaderInvoker = this;
     const method: string = self.getName() + '._process';
     context.__setCurrentProcessor(self);
 
-    if (!context.__interaction__) {
-      context.__interaction__ = new Interaction();
-      context.__interaction__.omd = this.omd;
-      context._setInteractionType(InteractionType.INTERACTION_LOCATE);
+    if (!context.getInteraction()) {
+      context._setInteraction(new Interaction());
+      context._setOperationMetadata(self.omd);
+      context.setInteractionType(InteractionType.INTERACTION_LOCATE);
     }
 
     debug(method, '[header]', context.getInteractionType());
@@ -339,7 +448,7 @@ class HeaderInvoker extends Processor {
               }.bind(self),
             );
           case InteractionType.INTERACTION_LOCATE_RESULT:
-            context._setInteractionType(InteractionType.INTERACTION_INVOKE);
+            context.setInteractionType(InteractionType.INTERACTION_INVOKE);
             return self._process(
               context,
               function(error: any, status: ProcessStatus) {
@@ -392,7 +501,7 @@ class TailInvoker extends Processor {
         const interactionType: InteractionType = context.getInteractionType();
         switch (interactionType) {
           case InteractionType.INTERACTION_LOCATE:
-            context._setInteractionType(InteractionType.INTERACTION_LOCATE_RESULT);
+            context.setInteractionType(InteractionType.INTERACTION_LOCATE_RESULT);
             return self._process(context, function(error: any, status: ProcessStatus) {
               next(error, status);
             });
@@ -404,7 +513,7 @@ class TailInvoker extends Processor {
             });
           case InteractionType.INTERACTION_INVOKE:
             try {
-              context.__interaction__.__hold_on_nexter__ = next;
+              context._setHoldOnNexter(next);
               const reval = self.invoke(context.targetObj, context.input);
               context.output = reval;
 
@@ -414,21 +523,21 @@ class TailInvoker extends Processor {
                 context.getInteractionType() === InteractionType.INTERACTION_INVOKE_FAULT
               ) {
                 debug(method, '[tail] sync callback mode');
-                context.__interaction__.__completion_style__ = CompletionStyle.SYNC_CALLBACK;
+                context._setCompletionStyle(CompletionStyle.SYNC_CALLBACK);
                 return;
               }
 
               // async promise mode
               if (Q.isPromise(reval)) {
                 debug(method, '[tail] async promise mode');
-                context.__interaction__.__completion_style__ = CompletionStyle.ASYNC_PROMISE;
+                context._setCompletionStyle(CompletionStyle.ASYNC_PROMISE);
 
                 let realResult: any = null;
                 let realError: any = null;
                 context.output = Q(reval)
                   .then(
                     function(result: any) {
-                      context._setInteractionType(InteractionType.INTERACTION_INVOKE_RESULT);
+                      context.setInteractionType(InteractionType.INTERACTION_INVOKE_RESULT);
                       realResult = result;
                       const deferred: Q.Deferred<any> = Q.defer<any>();
                       self._process(
@@ -442,7 +551,7 @@ class TailInvoker extends Processor {
                     }.bind(self),
                     function(error: any) {
                       realError = error;
-                      context._setInteractionType(InteractionType.INTERACTION_INVOKE_FAULT);
+                      context.setInteractionType(InteractionType.INTERACTION_INVOKE_FAULT);
                       const deferred: Q.Deferred<any> = Q.defer<any>();
                       self._process(
                         context,
@@ -468,14 +577,14 @@ class TailInvoker extends Processor {
               // async callback mode
               if (context._isCallbackSupported()) {
                 debug(method, '[tail] async callback mode');
-                context.__interaction__.__completion_style__ = CompletionStyle.ASYNC_CALLBACK;
+                context._setCompletionStyle(CompletionStyle.ASYNC_CALLBACK);
                 return;
               }
 
               // sync-directly
               debug(method, '[tail] sync directly return value mode');
-              context.__interaction__.__completion_style__ = CompletionStyle.SYNC_DIRECTLY;
-              context._setInteractionType(InteractionType.INTERACTION_INVOKE_RESULT);
+              context._setCompletionStyle(CompletionStyle.SYNC_DIRECTLY);
+              context.setInteractionType(InteractionType.INTERACTION_INVOKE_RESULT);
               self._process(
                 context,
                 function(error: any, status: ProcessStatus) {
@@ -490,7 +599,7 @@ class TailInvoker extends Processor {
               fault.reason = error.message || error.reason;
               fault.details = error;
               fault.isBizFault = true;
-              context._setInteractionType(InteractionType.INTERACTION_INVOKE_FAULT);
+              context.setInteractionType(InteractionType.INTERACTION_INVOKE_FAULT);
               self._process(
                 context,
                 function(error: any, status: ProcessStatus) {
@@ -533,7 +642,7 @@ class OnInvokeResponser extends Processor {
   public _process(context: InvocationContext, next: (error: any, status: ProcessStatus) => void): void {
     const self: OnInvokeResponser = this;
     context.__setCurrentProcessor(self);
-    const holdOnNexter = context.__interaction__.__hold_on_nexter__;
+    const holdOnNexter = context.getHoldOnNexter();
 
     self._getPrevious()._process(
       context,
@@ -545,14 +654,14 @@ class OnInvokeResponser extends Processor {
 
   public onInvokeResponse(context: InvocationContext): void {
     const self: OnInvokeResponser = this;
-    context._setInteractionType(InteractionType.INTERACTION_INVOKE_RESULT);
+    context.setInteractionType(InteractionType.INTERACTION_INVOKE_RESULT);
 
     self._process(context, null);
   }
 
   public onInvokeFault(context: InvocationContext): void {
     const self: OnInvokeResponser = this;
-    context._setInteractionType(InteractionType.INTERACTION_INVOKE_FAULT);
+    context.setInteractionType(InteractionType.INTERACTION_INVOKE_FAULT);
 
     self._process(context, null);
   }
@@ -607,17 +716,18 @@ export class EndpointInvoker {
       }.bind(self),
     );
 
-    // =================================================
-    // only contains sync interceptors in request path
-    // =================================================
+    // ==========================================================
+    // if all interceptors perform sync behavior in request path
+    // we can do a more accurate determination
+    // ==========================================================
 
     // sync-callback or sync-return
     if (
-      (context.__interaction__.__completion_style__ === CompletionStyle.SYNC_DIRECTLY ||
-        context.__interaction__.__completion_style__ === CompletionStyle.SYNC_CALLBACK) &&
+      (context.getCompletionStyle() === CompletionStyle.SYNC_DIRECTLY ||
+        context.getCompletionStyle() === CompletionStyle.SYNC_CALLBACK) &&
       processStatus.interactionType === InteractionType.INTERACTION_INVOKE_RESULT
     ) {
-      if (context.__interaction__.__completion_style__ === CompletionStyle.SYNC_DIRECTLY) {
+      if (context.getCompletionStyle() === CompletionStyle.SYNC_DIRECTLY) {
         debug(method, 'sync-directly mode');
       } else {
         debug(method, 'sync-callback mode');
@@ -626,22 +736,22 @@ export class EndpointInvoker {
     }
 
     // async-promise
-    if (context.__interaction__.__completion_style__ === CompletionStyle.ASYNC_PROMISE) {
+    if (context.getCompletionStyle() === CompletionStyle.ASYNC_PROMISE) {
       debug(method, 'async call mode with promise');
       return deferred.promise;
     }
 
     // async-callback
-    if (context.__interaction__.__completion_style__ === CompletionStyle.ASYNC_CALLBACK) {
+    if (context.getCompletionStyle() === CompletionStyle.ASYNC_CALLBACK) {
       debug(method, 'async call mode with callback');
       return context.output;
     }
 
     // sync call with exception thrown
     if (processStatus && processStatus.interactionType === InteractionType.INTERACTION_INVOKE_FAULT) {
-      if (context.__interaction__.__completion_style__ === CompletionStyle.SYNC_DIRECTLY) {
+      if (context.getCompletionStyle() === CompletionStyle.SYNC_DIRECTLY) {
         debug(method, 'sync-directly mode with fault');
-      } else if (context.__interaction__.__completion_style__ === CompletionStyle.SYNC_CALLBACK) {
+      } else if (context.getCompletionStyle() === CompletionStyle.SYNC_CALLBACK) {
         debug(method, 'sync-callback mode with fault');
       } else {
         debug(method, 'interceptor runtime fault  mode');
@@ -649,9 +759,14 @@ export class EndpointInvoker {
       throw context.fault.details;
     }
 
-    //============================================
-    // contains async interceptors in request path
-    //============================================
+    //=================================================
+    // Contains async interceptors in request path
+    //
+    // This implying:
+    // target method must be an async interaction
+    // and if callback method exists in request
+    // parameter, the callback is precedence approach
+    //=================================================
 
     // async-promise
     if (!context._isCallbackSupported()) {

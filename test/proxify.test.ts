@@ -15,7 +15,7 @@
  */
 
 /**
- * @module, Provides unit test cases for interceptor
+ * @module, Provides unit test cases for tsnode-proxify
  *
  */
 
@@ -116,8 +116,7 @@ class LoggingInterceptor extends interceptor.AbstractInterceptor {
   }
 
   private getTargetFullName(context: InvocationContext): string {
-    let targetFullName =
-      context.__interaction__.omd.__className__ + '.' + context.__interaction__.omd.__operationName__;
+    let targetFullName = context.getClassName() + '.' + context.getOperationName();
 
     return targetFullName;
   }
@@ -303,8 +302,7 @@ class Logger extends interceptor.AbstractInterceptor {
   }
 
   private getTargetFullName(context: InvocationContext): string {
-    let targetFullName =
-      context.__interaction__.omd.__className__ + '.' + context.__interaction__.omd.__operationName__;
+    let targetFullName = context.getClassName() + '.' + context.getOperationName();
 
     return targetFullName;
   }
@@ -388,8 +386,7 @@ class AsyncLogger extends interceptor.AbstractInterceptor {
   }
 
   private getTargetFullName(context: InvocationContext): string {
-    let targetFullName =
-      context.__interaction__.omd.__className__ + '.' + context.__interaction__.omd.__operationName__;
+    let targetFullName = context.getClassName() + '.' + context.getOperationName();
 
     return targetFullName;
   }

@@ -25,6 +25,7 @@ import * as Debug from 'debug';
 const debug: Debug.IDebugger = Debug('proxify:metadata:common');
 
 export enum InteractionStyleType {
+  UNKNOWN = 0,
   SYNC = 1,
   ASYNC = 2,
 }

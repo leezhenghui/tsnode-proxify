@@ -69,7 +69,7 @@ export abstract class AbstractInterceptor extends Processor {
     self.canProcess(
       context,
       function(error: any, canProcess: boolean) {
-        const interactionType: InteractionType = context.__interaction__.interactionType;
+        const interactionType: InteractionType = context.getInteractionType();
         if (!canProcess) {
           if (
             interactionType === InteractionType.INTERACTION_LOCATE ||
@@ -231,7 +231,7 @@ export abstract class AbstractInterceptor extends Processor {
       fault.reason = error.message || error.reason;
       fault.details = error;
     }
-    context.__interaction__.interactionType = InteractionType.INTERACTION_INVOKE_FAULT;
+    context.setInteractionType(InteractionType.INTERACTION_INVOKE_FAULT);
     context.fault = fault;
 
     self._process(

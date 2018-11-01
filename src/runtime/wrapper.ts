@@ -126,6 +126,7 @@ class CallbackMethodWrapperTrapHandler {
           }
         }
 
+        self.iCtx._setCallbackStyle(true);
         if (self.invoker && self.iCtx) {
           if (fault) {
             // console.log('==>[invokeFaultAsync Flow]: ', operation, args, this.metadata);
@@ -137,7 +138,6 @@ class CallbackMethodWrapperTrapHandler {
             debug(method + ' [InvokeResultAsyncFlow]', operation, args, this.metadata);
             self.invoker.invokeResultAsync(self.iCtx);
           }
-          self.iCtx.__interaction__.__isCallbackStyle__ = true;
         } else {
           debug(method + ' skip proxify handling');
         }
