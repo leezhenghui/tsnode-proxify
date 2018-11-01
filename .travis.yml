@@ -1,0 +1,13 @@
+sudo: false 
+language: node_js
+node_js:
+  - "6"
+script:
+  - npm install -D ts-node 
+  - npm install -D typescript 
+  - npm install 
+  - npm run build
+  - npm run test
+branches:
+  only:
+    - master

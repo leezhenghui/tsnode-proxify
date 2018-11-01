@@ -29,7 +29,12 @@
     "aop",
     "proxy",
     "hook",
-    "interceptor"
+    "interceptor",
+		"aspect",
+		"class",
+		"component",
+		"before",
+		"after"
   ],
   "license": "Apache-2.0",
   "devDependencies": {
