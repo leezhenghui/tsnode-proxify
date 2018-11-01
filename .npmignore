@@ -6,3 +6,4 @@ benchmark
 tsconfig.json
 tslint.json
 .prettierrc
+*.log
