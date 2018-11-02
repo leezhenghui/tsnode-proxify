@@ -269,7 +269,7 @@ export class InvocationContext {
     if (!self.output) {
       return false;
     }
-    return Q.isPromise(self.output);
+    return Q.isPromiseAlike(self.output);
   }
 
   public _targetInvoked(): void {
@@ -529,7 +529,7 @@ class TailInvoker extends Processor {
               }
 
               // async promise mode
-              if (Q.isPromise(reval)) {
+              if (Q.isPromiseAlike(reval)) {
                 debug(method, '[tail] async promise mode');
                 context._setCompletionStyle(CompletionStyle.ASYNC_PROMISE);
 
@@ -710,7 +710,7 @@ export class EndpointInvoker {
       context,
       function(error: any, status: ProcessStatus) {
         processStatus = status;
-        if (Q.isPromise(context.output)) {
+        if (Q.isPromiseAlike(context.output)) {
           return deferred.resolve(context.output);
         }
         deferred.resolve();
@@ -730,8 +730,10 @@ export class EndpointInvoker {
     ) {
       if (context.getCompletionStyle() === CompletionStyle.SYNC_DIRECTLY) {
         debug(method, 'sync-directly mode');
+        // console.log(method, 'sync-directly mode');
       } else {
         debug(method, 'sync-callback mode');
+        // console.log(method, 'sync-callback mode');
       }
       return context.output;
     }
@@ -739,12 +741,14 @@ export class EndpointInvoker {
     // async-promise
     if (context.getCompletionStyle() === CompletionStyle.ASYNC_PROMISE) {
       debug(method, 'async call mode with promise');
+      // console.log(method, 'async call mode with promise');
       return deferred.promise;
     }
 
     // async-callback
     if (context.getCompletionStyle() === CompletionStyle.ASYNC_CALLBACK) {
       debug(method, 'async call mode with callback');
+      // console.log(method, 'async call mode with callback');
       return context.output;
     }
 
@@ -752,10 +756,13 @@ export class EndpointInvoker {
     if (processStatus && processStatus.interactionType === InteractionType.INTERACTION_INVOKE_FAULT) {
       if (context.getCompletionStyle() === CompletionStyle.SYNC_DIRECTLY) {
         debug(method, 'sync-directly mode with fault');
+        // console.log(method, 'sync-directly mode with fault');
       } else if (context.getCompletionStyle() === CompletionStyle.SYNC_CALLBACK) {
         debug(method, 'sync-callback mode with fault');
+        // console.log(method, 'sync-callback mode with fault');
       } else {
         debug(method, 'interceptor runtime fault  mode');
+        // console.log(method, 'interceptor runtime fault  mode');
       }
       throw context.fault.details;
     }
@@ -772,10 +779,13 @@ export class EndpointInvoker {
     // async-promise
     if (!context._isCallbackSupported()) {
       debug(method, 'async call mode with promise');
+      // console.log(method, 'async call mode with promise');
       return deferred.promise;
     }
 
     // async-callback
+    debug(method, 'async call mode with callback');
+    // console.log(method, 'async call mode with callback');
     return context.output;
   }
 

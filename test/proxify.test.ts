@@ -681,6 +681,19 @@ class MismatchedInteraction {
   }
 }
 
+@Component({
+  componentName: 'AsyncAwaitTest',
+})
+class AsyncAwaitTest {
+  @InteractionStyle(InteractionStyleType.ASYNC)
+  @QoS({ singleton: logger })
+  @QoS({ singleton: asyncLogger })
+  public async greet(name: string): Promise<string> {
+    await Promise.resolve(1);
+    return 'Hello, ' + name;
+  }
+}
+
 //=================================================
 //   Interceptor Registry Function Test
 //=================================================
@@ -1038,5 +1051,25 @@ describe('Integration Tests', function() {
     } catch (err) {
       expect(true).to.equal(err.message.indexOf('Conflict interceptor name') !== -1);
     }
+  });
+
+  it('@QoS on async/await method with sync interceptor', async function() {
+    let hello: AsyncAwaitTest = new AsyncAwaitTest();
+    logger.reset();
+    const result = await hello.greet('World');
+    expect('Hello, World').to.equal(result);
+    expect(logger.initMethodCalledCount).to.equal(1);
+    expect(logger.handleRequestMethodCalledCount).to.equal(1);
+    expect(logger.handleResponseMethodCalledCount).to.equal(1);
+  });
+
+  it('@QoS on async/await method with async interceptor', async function() {
+    let hello: AsyncAwaitTest = new AsyncAwaitTest();
+    asyncLogger.reset();
+    const result = await hello.greet('World');
+    expect('Hello, World').to.equal(result);
+    expect(asyncLogger.initMethodCalledCount).to.equal(1);
+    expect(asyncLogger.handleRequestMethodCalledCount).to.equal(1);
+    expect(asyncLogger.handleResponseMethodCalledCount).to.equal(1);
   });
 });
