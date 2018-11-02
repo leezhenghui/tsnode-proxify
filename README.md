@@ -1,6 +1,6 @@
 ## Introduction
 
-[`tsnode-proxify`](https://github.com/leezhenghui/tsnode-proxify.git) is a proxy-based method hooks and AOP library for [node.js](https://nodejs.org) with [typescript](https://www.typescriptlang.org/). It allows you to extend/provide customized QoS handler and apply these QoS features via typescript decorators(metadata-programming-like syntax) without invasiveness to existing code logic, which increase modularity for your application.
+[**tsnode-proxify**](https://github.com/leezhenghui/tsnode-proxify.git) is a proxy-based method hook and AOP library for [node.js](https://nodejs.org) with [typescript](https://www.typescriptlang.org/). It allows you to extend/provide customized QoS handler and apply these QoS features via typescript [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html)(metadata-programming-like syntax) without invasiveness to existing code logic, which increase modularity for your application.
 
 > 
 > tsnode-proxify depends on typescript decorator feature which is marked as **experimental** feature in typescript. In the meanwhile, tsnode-proxify is still a **beta** version project for now. 
@@ -84,7 +84,6 @@ Before we dig into the tsnode-proxify, we need to clarify some concepts.
 `tsnode-proxify` enable the aspect modularity to be implemented as an `Interceptor` class(declared by @Interceptor decorator) for a specific QoS intention, which can be dynamically injected into the join-point if a desired @QoS declaration being claimed on the target method. 
 
 ```typescript
-
 @Interceptor({
   "interactionStyle": InteractionStyleType.SYNC
 })
@@ -117,7 +116,6 @@ Before we dig into the tsnode-proxify, we need to clarify some concepts.
   	return 'NoopInterceptor';	
   }
 }
-
 ```
 
 > 
@@ -267,7 +265,7 @@ Before we dig into the tsnode-proxify, we need to clarify some concepts.
 
 - Create a component in file **src/helloworld.ts** as below:
 
-  As you see beow, to "declare" a class to be a component managed, we just add to apply a couple of decorators to it. No other differences than a normal class definition.
+  As you see beow, to "declare" a class to be a component managed, we just need to apply a couple of decorators to it, there is no other differences than a normal class definition.
   
   ```
   import {
@@ -279,7 +277,6 @@ Before we dig into the tsnode-proxify, we need to clarify some concepts.
     Fault,
     Output,
     InteractionStyleType,
-    InvocationContext,
   } from 'tsnode-proxify';
   import { Logger } from './logger';
   
@@ -331,7 +328,7 @@ Before we dig into the tsnode-proxify, we need to clarify some concepts.
 
 ### Run Unit Tests
 
-You can run the unit tests to get a full picture of what tsnode-proxify support so far.
+You can run the [integration tests](https://github.com/leezhenghui/tsnode-proxify/tree/master/test) to get a full picture of what features has been supported by tsnode-proxify so far.
 
 ```shell
 npm run test
