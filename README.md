@@ -340,21 +340,21 @@ npm run test
     ...
 
 Integration Tests
-  ✓ @QoS on static sync-return method with sync-interceptor
-  ✓ @QoS on sync-return method with sync-interceptor
-  ✓ @QoS on sync-callback method with sync-interceptor
-  ✓ @QoS on async-promise method with sync-interceptor (102ms)
-  ✓ @QoS on async-promise method with async-interceptor (102ms)
-  ✓ @QoS on async-callback method with sync-interceptor (101ms)
-  ✓ @QoS on async-callback method with async-interceptor (252ms)
-  ✓ @QoS on sync-callback method which being invoked recursively with a pass-through callback function handler
-  ✓ @QoS on a method with recursive invocations, QoSed method is triggered by "this" reference
-  ✓ @QoS on sync-return bind()ed method
-  ✓ Validation: async style interceptor can NOT be applied to sync style target method
-  ✓ Validation: conflict/dumplicated interceptor names
-  ✓ @QoS on async/await method with sync interceptor
-  ✓ @QoS on async/await method with async interceptor
-``
+    ✓ @QoS on static sync-return method with sync-interceptor
+    ✓ @QoS on sync-return method with sync-interceptor
+    ✓ @QoS on sync-callback method with sync-interceptor
+    ✓ @QoS on async-promise method with sync-interceptor (102ms)
+    ✓ @QoS on async-promise method with async-interceptor (102ms)
+    ✓ @QoS on async-callback method with sync-interceptor (101ms)
+    ✓ @QoS on async-callback method with async-interceptor (252ms)
+    ✓ @QoS on sync-callback method which being invoked recursively with a pass-through callback function handler
+    ✓ @QoS on a method with recursive invocations, QoSed method is triggered by "this" reference
+    ✓ @QoS on sync-return bind()ed method
+    ✓ Validation: async style interceptor can NOT be applied to sync style target method
+    ✓ Validation: conflict/dumplicated interceptor names
+    ✓ @QoS on async/await method with sync interceptor
+    ✓ @QoS on async/await method with async interceptor
+```
 
 ## Join us
 
