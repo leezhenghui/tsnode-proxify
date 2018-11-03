@@ -528,6 +528,13 @@ class TailInvoker extends Processor {
                 return;
               }
 
+              // async callback mode
+              if (context._isCallbackSupported()) {
+                debug(method, '[tail] async callback mode');
+                context._setCompletionStyle(CompletionStyle.ASYNC_CALLBACK);
+                return;
+              }
+
               // async promise mode
               if (Q.isPromiseAlike(reval)) {
                 debug(method, '[tail] async promise mode');
@@ -572,13 +579,6 @@ class TailInvoker extends Processor {
                       return Q(realResult);
                     }.bind(self),
                   );
-                return;
-              }
-
-              // async callback mode
-              if (context._isCallbackSupported()) {
-                debug(method, '[tail] async callback mode');
-                context._setCompletionStyle(CompletionStyle.ASYNC_CALLBACK);
                 return;
               }
 

@@ -21,7 +21,7 @@ The `proxy` is a well-used design pattern. We can see it in either high level so
 
 AOP is really popular in java. In a JEE server runtime, the transaction, security are noramlly provided as AOP aspects under the hood. In SOA, the [SCA](https://en.wikipedia.org/wiki/Service_Component_Architecture) runtime(e.g: Tuscany) also heavily depends on the AOP to provide QoS, IT-Specific features around the business logic. In [Spring](https://spring.io/), the AOP is actually delivered as a base component in fundamental layer and open to upper stack. Indeed, per my experiences on JEE server development, AOP provides an excellent solution for the problems in enterprise application field to increase modularity and make the system more loose-coupled, especially in the middleware product development.
 
-Implementing an AOP framework to advise method execution, the proxy pattern is perfect fit here. The aspect module code can be abstracted, prepared and  **injected** at `before` and `after` points of the method and also be able to recieve the execution context, arguments and output(or fault) to the target operation like it was there.  That is reason we usually see the proxy pattern in an AOP framework.  In a pure java world, some typical approaches to achieve this:
+Implementing an AOP framework to advise method execution, the proxy pattern is perfect fit here. The aspect module code can be abstracted, prepared and  **injected** at the `before` and `after` join points of the method and also be able to recieve the execution context, arguments and output(or fault) to the target operation like it was there.  That is reason we usually see the proxy pattern in an AOP framework.  In a pure java world, some typical approaches to achieve this:
 
 - Weave(static-way)
   - Compile-time weaving(e.g: using AspectJ compiler, which can provide complete AOP implementation)
@@ -63,13 +63,13 @@ Some concepts/terminologies to clarify before go further to understand the featu
      }
      ```
 
-2. **Completion hints**: invocation completion hint is the concept relevant to how tsnode-proxify runtime understand `after` of an execution join point. It should be mark as the moment of method logic execution done.
+2. **Completion hints**: invocation completion hint is the concept relevant to how tsnode-proxify runtime understand the `after` join point of a method. Because node.js is async-native, tsnode-proxify need the hints to identify the moment of method execution done logically.
 
-    - returned-directly: target method getting returned (of course, this is for sync style method only)
+    - `returned-directly`: target method getting returned (of course, this is for sync style method only)
     
-    - callback: the callback method getting called (adopt to both sync and async style method)
+    - `callback`: the callback method getting called (adopt to both sync and async style method)
     
-    - promise: the returned promise's status change from pending to resolved or rejected (for async method with promise as return value only)  
+    - `promise`: the returned promise's status change from pending to resolved or rejected (for async method with promise as return value only)  
 
 3. [tsnode-proxify](https://github.com/leezhenghui/tsnode-proxify.git) can support below **combinations** with `before` and/or `after` advise join points
 
@@ -82,7 +82,7 @@ Some concepts/terminologies to clarify before go further to understand the featu
     - `async-promise`(suitable to `async/await` usage)
 
 >
-> tsnode-proxify support the method siganture defining both callback parameter AND promise typed return value, but for each invocation, the method should have a clear intention/behavior, that means, if a callback parameter is presented, the return value should be null, or a valid promise get returned, the callback parameter should absence for that invocation. 
+> tsnode-proxify support the method siganture defining both callback parameter AND promise typed return value. If both callback parameter and returned promise are satisfied for an invocation, the async-callback way will take preference. However, I strongly suggest a method keep a clear style/behavior, that means, for the invocation, if a callback parameter is presented, the return value should be null, or a valid promise get returned, the callback parameter should absence for that invocation. 
 
 
 `tsnode-proxify` enable the aspect modularity to be implemented as an `Interceptor` class(declared by @Interceptor decorator) for a specific QoS intention, which can be dynamically injected into the join-point if a desired @QoS declaration being claimed on the target method. 
